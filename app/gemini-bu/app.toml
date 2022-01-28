@@ -154,7 +154,7 @@ priority = 3
 requires = {flash = 32768, ram = 16384 }
 stacksize = 2048
 start = true
-task-slots = ["sys", "i2c_driver"]
+task-slots = ["sys", "i2c_driver", "spdm_responder"]
 
 [tasks.idle]
 path = "../../task/idle"
@@ -162,6 +162,13 @@ name = "task-idle"
 priority = 5
 requires = {flash = 128, ram = 256}
 stacksize = 256
+start = true
+
+[tasks.spdm_responder]
+path = "../../task/spdm-responder"
+name = "task-spdm-responder"
+priority = 1
+requires = {flash = 8192, ram = 2048}
 start = true
 
 [config]
