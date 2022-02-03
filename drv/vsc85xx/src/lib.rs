@@ -231,6 +231,10 @@ pub fn init_vsc8552_phy<P: PhyRw + PhyVsc85xx>(
     })?;
     v.wait_timeout(phy::STANDARD::MODE_CONTROL(), |r| r.sw_reset() != 1)?;
 
+    // Enable EPG
+    let epg_address: PhyRegisterAddress<u16> = PhyRegisterAddress::from_page_and_addr_unchecked(1, 29);
+    v.write(epg_address, 0xe400)?;
+
     Ok(())
 }
 

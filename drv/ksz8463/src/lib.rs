@@ -22,6 +22,13 @@ enum Trace {
 }
 ringbuf!(Trace, 16, Trace::None);
 
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum MIBCounter {
+    Invalid,
+    Count(u32),
+    CountOverflow(u32),
+}
+
 const fn register_offset(address: u16) -> u16 {
     let addr10_2 = address >> 2;
     let mask_shift = 2 /* turn around bits */ + (2 * ((address >> 1) & 0x1));
@@ -42,11 +49,18 @@ pub enum Register {
     MACAR2 = register_offset(0x012),
     MACAR3 = register_offset(0x014),
 
+    IADR4 = register_offset(0x02c),
+    IADR5 = register_offset(0x02e),
+    IACR = register_offset(0x030),
+
     P1MBCR = register_offset(0x04c),
     P1MBSR = register_offset(0x04e),
 
     P2MBCR = register_offset(0x058),
     P2MBSR = register_offset(0x05a),
+
+    P1PHYCTRL = register_offset(0x066),
+    P2PHYCTRL = register_offset(0x06a),
 
     CFGR = register_offset(0x0d8),
     DSP_CNTRL_6 = register_offset(0x734),
@@ -111,8 +125,31 @@ impl Ksz8463 {
         self.write(Register::CIDER, 0)
     }
 
+    pub fn read_mib_counter(&self, offset: u8) -> Result<MIBCounter, SpiError> {
+        // Request counter with given offset.
+        self.write(Register::IACR, 0x1c00 | offset as u16)?;
+
+        // Read counter data.
+        let hi = self.read(Register::IADR5)?;
+        let lo = self.read(Register::IADR4)?;
+
+        // Determine state of the counter, see p. 184 of datasheet.
+        let valid = ((1 << 14) & hi) == 0;
+        let overflow = ((1 << 15) & hi) != 0;
+        let value: u32 = (((hi as u32) << 16) | lo as u32) & (3 << 30);
+
+        if !valid {
+            Ok(MIBCounter::Invalid)
+        } else if !overflow {
+            Ok(MIBCounter::Count(value))
+        } else {
+            Ok(MIBCounter::CountOverflow(value))
+        }
+    }
+
     /// Configures the KSZ8463 switch in 100BASE-FX mode.
     pub fn configure(&self) {
+        ringbuf_entry!(Trace::None);
         let gpio_driver = GPIO.get_task_id();
         let gpio_driver = Gpio::from(gpio_driver);
 
@@ -142,8 +179,15 @@ impl Ksz8463 {
         ringbuf_entry!(Trace::Id(id));
 
         // Configure for 100BASE-FX operation
-        self.enable().unwrap();
         self.write_masked(Register::CFGR, 0x0, 0xc0).unwrap();
         self.write_masked(Register::DSP_CNTRL_6, 0, 0x2000).unwrap();
+
+        // Disable autonegotiation
+        //self.write_masked(Register::P1MBCR, 0, 1 << 12).unwrap();
+
+        // Enable port 1 near-end loopback
+        self.write_masked(Register::P1PHYCTRL, 1 << 1, 1 << 1).unwrap();
+
+        self.enable().unwrap();
     }
 }

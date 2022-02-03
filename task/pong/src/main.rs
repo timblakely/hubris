@@ -6,8 +6,10 @@
 #![no_main]
 
 use userlib::*;
+use task_net_api::*;
 
 task_slot!(USER_LEDS, user_leds);
+task_slot!(NET, net);
 
 #[export_name = "main"]
 pub fn main() -> ! {
@@ -17,6 +19,7 @@ pub fn main() -> ! {
     let mut response: u32 = 0;
 
     let user_leds = drv_user_leds_api::UserLeds::from(USER_LEDS.get_task_id());
+    let net = Net::from(NET.get_task_id());
 
     let mut current = 0;
     let mut msg = [0; 16];
@@ -47,6 +50,9 @@ pub fn main() -> ! {
                     }
                 };
             }
+
+            // Wake the Net task and get link status data.
+            net.wake().unwrap();
         }
     }
 }

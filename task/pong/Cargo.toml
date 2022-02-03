@@ -10,6 +10,7 @@ panic-messages = ["userlib/panic-messages"]
 cortex-m = {version = "0.7", features = ["inline-asm"]}
 userlib = {path = "../../sys/userlib"}
 drv-user-leds-api = {path = "../../drv/user-leds-api"}
+task-net-api = {path = "../net-api"}
 
 [[bin]]
 name = "task-pong"

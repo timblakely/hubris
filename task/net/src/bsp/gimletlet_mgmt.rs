@@ -6,7 +6,7 @@ use crate::GPIO;
 use drv_spi_api::Spi;
 use drv_stm32h7_eth as eth;
 use drv_stm32h7_gpio_api as gpio_api;
-use ksz8463::{Ksz8463, Register as KszRegister};
+use ksz8463::{Ksz8463, Register as KszRegister, MIBCounter};
 use ringbuf::*;
 use userlib::{hl::sleep_for, task_slot};
 use vsc7448_pac::types::PhyRegisterAddress;
@@ -19,9 +19,14 @@ const VSC8552_PORT: u8 = 0b11100; // Based on resistor strapping
 #[derive(Copy, Clone, Debug, PartialEq)]
 enum Trace {
     None,
+    Ksz8463Configured,
+    Vsc8552Configured,
     Ksz8463Status { port: u8, status: u16 },
+    Ksz8463Counter { port: u8, counter: MIBCounter },
     Vsc8552Status { port: u8, status: u16 },
     Vsc8552Status100 { port: u8, status: u16 },
+    Vsc8552TransmitGoodCount { port: u8, count: u16 },
+    Vsc8552ReceivedCRCGoodCount { port: u8, count: u16 },
 }
 ringbuf!(Trace, 16, Trace::None);
 
@@ -124,10 +129,12 @@ impl Bsp {
         // The KSZ8463 connects to the SP over RMII, then sends data to the
         // VSC8552 over 100-BASE FX
         self.ksz.configure();
+        ringbuf_entry!(Trace::Ksz8463Configured);
 
         // The VSC8552 connects the KSZ switch to the management network
         // over SGMII
         configure_vsc8552(eth);
+        ringbuf_entry!(Trace::Vsc8552Configured);
     }
 
     pub fn wake(&self, eth: &mut eth::Ethernet) {
@@ -137,13 +144,27 @@ impl Bsp {
             status: p1_sr
         });
 
+        let p1_cr = self.ksz.read(KszRegister::P1MBCR).unwrap();
+        ringbuf_entry!(Trace::Ksz8463Status {
+            port: 1,
+            status: p1_cr
+        });
+
+        let p1_counter = self.ksz.read_mib_counter(0x0).unwrap();
+        ringbuf_entry!(Trace::Ksz8463Counter {
+            port: 1,
+            counter: p1_counter
+        });
+
+        /*
         let p2_sr = self.ksz.read(KszRegister::P2MBSR).unwrap();
         ringbuf_entry!(Trace::Ksz8463Status {
             port: 2,
             status: p2_sr
         });
+        */
 
-        for i in [0, 1] {
+        for i in [0] {
             let port = VSC8552_PORT + i;
             let status = eth.smi_read(port, eth::SmiClause22Register::Status);
             ringbuf_entry!(Trace::Vsc8552Status { port, status });
@@ -151,6 +172,21 @@ impl Bsp {
             let status = eth
                 .smi_read(port, eth::SmiClause22Register::TxFxExtendedStatus);
             ringbuf_entry!(Trace::Vsc8552Status100 { port, status });
+
+            let status = eth
+                .smi_read(port, eth::SmiClause22Register::BypassControl);
+            ringbuf_entry!(Trace::Vsc8552Status100 { port, status });
+
+            // Switch to Extended Page 3
+            eth.smi_write(port, eth::SmiClause22Register::ExtendedPageAccess, 3);
+
+            let transmit_good = eth.smi_read(port, 21);
+            ringbuf_entry!(Trace::Vsc8552TransmitGoodCount { port, count: transmit_good });
+
+            let crc_good_count = eth.smi_read(port, 28);
+            ringbuf_entry!(Trace::Vsc8552ReceivedCRCGoodCount { port, count: crc_good_count });
+
+            eth.smi_write(port, eth::SmiClause22Register::ExtendedPageAccess, 0);
         }
     }
 }
