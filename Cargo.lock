@@ -2573,6 +2573,7 @@ dependencies = [
  "num-traits",
  "ringbuf",
  "serde",
+ "task-spdm-api",
  "userlib",
  "zerocopy",
 ]
@@ -2737,13 +2738,28 @@ dependencies = [
 ]
 
 [[package]]
-name = "task-spdm-responder"
+name = "task-spdm"
 version = "0.1.0"
 dependencies = [
+ "idol",
  "idol-runtime",
+ "num-traits",
  "ringbuf",
  "spdm",
+ "task-spdm-api",
  "userlib",
+ "zerocopy",
+]
+
+[[package]]
+name = "task-spdm-api"
+version = "0.1.0"
+dependencies = [
+ "abi",
+ "idol",
+ "num-traits",
+ "userlib",
+ "zerocopy",
 ]
 
 [[package]]
