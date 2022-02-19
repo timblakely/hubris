@@ -10,7 +10,7 @@ num-traits = { version = "0.2.12", default-features = false }
 ringbuf = {path = "../../lib/ringbuf"}
 idol-runtime = {git = "https://github.com/oxidecomputer/idolatry.git"}
 task-spdm-api = {path = "../spdm-api"}
-spdm = {git = "https://github.com/oxidecomputer/spdm.git", branch = "crypto-cfg"}
+spdm = {git = "https://github.com/oxidecomputer/spdm.git", branch = "main"}
 #spdm = {path = "../../../spdm"}
 
 [build-dependencies]
