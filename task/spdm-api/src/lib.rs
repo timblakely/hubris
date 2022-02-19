@@ -23,6 +23,8 @@ pub enum SpdmError {
     SinkTooSmall = 4,
     /// The message being sent exceeds the internal buffer size.
     SourceTooLarge = 5,
+    /// The SPDM responder reset due to a protocol error.
+    ResponderReset = 6,
 }
 
 impl From<u32> for SpdmError {
@@ -33,6 +35,7 @@ impl From<u32> for SpdmError {
             3 => SpdmError::ShortMessage,
             4 => SpdmError::SinkTooSmall,
             5 => SpdmError::SourceTooLarge,
+            6 => SpdmError::ResponderReset,
             _ => panic!(),
         }
     }

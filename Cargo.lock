@@ -382,6 +382,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "crypto"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8364f6dbc4dc1c12c6fd536bb2da8a7ad345a7381b1d089acc6414b7ce4c2598"
+dependencies = [
+ "digest",
+]
+
+[[package]]
 name = "crypto-bigint"
 version = "0.2.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2326,10 +2335,11 @@ dependencies = [
 [[package]]
 name = "spdm"
 version = "0.1.0"
-source = "git+https://github.com/oxidecomputer/spdm.git?branch=crypto-cfg#b933d93c6a964cabce9edf3b7d8a27e9fd21a77d"
+source = "git+https://github.com/oxidecomputer/spdm.git?branch=main#5bf64da95553c29f4dc2419773e4eca131197e3d"
 dependencies = [
  "anyhow",
  "bitflags",
+ "crypto",
  "serde",
  "serde_derive",
  "thiserror",

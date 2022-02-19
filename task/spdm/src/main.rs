@@ -45,7 +45,8 @@ impl From<&AllStates> for State {
 enum LogMsg {
     // Static initializer
     Init,
-    _State(State),
+    State(State),
+    RspLen(usize),
 }
 ringbuf!(LogMsg, 16, LogMsg::Init);
 
@@ -53,31 +54,31 @@ const MAX_SPDM_MSG_SIZE: usize = 256;
 
 #[export_name = "main"]
 fn main() -> ! {
-    const EMPTY_SLOT: Option<FilledSlot<'_, FakeSigner>> = None;
-    let _slots = [EMPTY_SLOT; NUM_SLOTS];
-    // let responder = spdm::Responder::new(slots);
-    // ringbuf_entry!(LogMsg::State(responder.state().into()));
-
     let mut buffer = [0; idl::INCOMING_SIZE];
-    let msg = [0; MAX_SPDM_MSG_SIZE];
-    let mut server = ServerImpl {
-        // _responder: responder,
-        valid: 0,
-        message: msg,
-    };
+    let mut server = ServerImpl::new();
 
     loop {
         idol_runtime::dispatch(&mut buffer, &mut server);
     }
 }
 
-struct ServerImpl {
-    // _responder: spdm::Responder<'a, FakeSigner>,
+struct ServerImpl<'a> {
+    responder: spdm::Responder<'a, FakeSigner>,
     valid: usize,
     message: [u8; MAX_SPDM_MSG_SIZE],
 }
 
-impl idl::InOrderSpdmImpl for ServerImpl {
+impl<'a> ServerImpl<'a> {
+    fn new() -> ServerImpl<'a> {
+        const EMPTY_SLOT: Option<FilledSlot<'_, FakeSigner>> = None;
+        let slots = [EMPTY_SLOT; NUM_SLOTS];
+        let responder = spdm::Responder::new(slots);
+        ringbuf_entry!(LogMsg::State(responder.state().into()));
+        ServerImpl { responder, valid: 0, message: [0; MAX_SPDM_MSG_SIZE] }
+    }
+}
+
+impl idl::InOrderSpdmImpl for ServerImpl<'_> {
     /// A client sends a message for SPDM processing.
     fn send(
         &mut self,
@@ -97,9 +98,10 @@ impl idl::InOrderSpdmImpl for ServerImpl {
         }
 
         // Read the entire message into our address space.
-        source.read_range(0..length, &mut self.message[..length])
+        source
+            .read_range(0..length, &mut self.message[..length])
             .map_err(|_| RequestError::Fail(ClientError::WentAway))?;
-        self.valid = length;    // Message is ready for processing.
+        self.valid = length; // Message is ready for processing.
 
         // TODO: Replace toy transform with SPDM work.
         for byte in self.message[..length].iter_mut() {
@@ -116,7 +118,6 @@ impl idl::InOrderSpdmImpl for ServerImpl {
         // sink: LenLimit<Leased<W, [u8]>, 256>,
         sink: Leased<W, [u8]>,
     ) -> Result<usize, RequestError<SpdmError>> {
-
         if self.valid == 0 {
             return Err(SpdmError::NoMessageAvailable.into());
         }
@@ -127,8 +128,8 @@ impl idl::InOrderSpdmImpl for ServerImpl {
         let len = self.valid;
         sink.write_range(0..len, &self.message[..len])
             .map_err(|_| RequestError::Fail(ClientError::WentAway))?;
-        self.message[..self.valid].iter_mut().for_each(|m| *m = 0);   // hygene: zero message
-        self.valid = 0;  // Comsume the stored message
+        self.message[..self.valid].iter_mut().for_each(|m| *m = 0); // hygene: zero message
+        self.valid = 0; // Comsume the stored message
 
         Ok(len)
     }
@@ -156,23 +157,44 @@ impl idl::InOrderSpdmImpl for ServerImpl {
             return Err(SpdmError::SinkTooSmall.into());
         }
 
-        // Read the entire message into our address space.
-        source.read_range(0..length, &mut self.message[..length])
-            .map_err(|_| RequestError::Fail(ClientError::WentAway))?;
-        self.valid = length;
+        let mut req = [0u8; MAX_SPDM_MSG_SIZE];
+        let mut rsp = [0u8; MAX_SPDM_MSG_SIZE];
 
-        // TODO: Replace this loop with actual SPDM processing
-        for i in 0..length {
-            self.message[i] = self.message[i] ^ 0xff;
+        // Read the entire message into our address space.
+        source
+            .read_range(0..source.len(), &mut req)
+            .map_err(|_| RequestError::Fail(ClientError::WentAway))?;
+
+        let (reply, res) =
+            self.responder.handle_msg(&req[..source.len()], &mut rsp);
+        ringbuf_entry!(LogMsg::State(self.responder.state().into()));
+        ringbuf_entry!(LogMsg::RspLen(reply.len()));
+
+        // There was a protocol error. Just go back to the initial state.
+        if res.is_err() {
+            self.responder.reset();
+            ringbuf_entry!(LogMsg::State(self.responder.state().into()));
+
+            // A reply is always valid, even in the case of an error, since we want
+            // to inform the requester of any SPDM errors that should go over the wire. In some
+            // cases, reply may be of zero length however, indicating that nothing should be
+            // sent to the responder and any connections should be closed. In this
+            // case we return an Error.
+            //
+            // TODO: Map actual underlying errors?
+            if reply.is_empty() {
+                return Err(SpdmError::ResponderReset.into());
+            }
         }
 
-        sink.write_range(0..length, &self.message[..length])
+        self.valid = reply.len();
+
+        sink.write_range(0..reply.len(), reply)
             .map_err(|_| RequestError::Fail(ClientError::WentAway))?;
 
-        self.message[..self.valid].iter_mut().for_each(|m| *m = 0);   // hygene: zero message
-        self.valid = 0;  // Comsume the stored message
+        self.valid = 0; // Comsume the stored message
 
-        Ok(length)
+        Ok(reply.len())
     }
 }
 
