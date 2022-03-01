@@ -1144,6 +1144,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "ecp5"
+version = "0.1.0"
+dependencies = [
+ "bitfield",
+ "build-util",
+ "cfg-if 1.0.0",
+ "drv-spi-api",
+ "drv-stm32xx-sys-api",
+ "num-traits",
+ "ringbuf",
+ "userlib",
+ "zerocopy",
+]
+
+[[package]]
 name = "elliptic-curve"
 version = "0.10.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2624,6 +2639,24 @@ name = "tap"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "55937e1799185b12863d447f42597ed69d9928686b8d88a1df17376a097d8369"
+
+[[package]]
+name = "task-ecp5"
+version = "0.1.0"
+dependencies = [
+ "build-util",
+ "cfg-if 1.0.0",
+ "drv-spi-api",
+ "drv-stm32xx-sys-api",
+ "ecp5",
+ "gnarle",
+ "idol",
+ "idol-runtime",
+ "num-traits",
+ "ringbuf",
+ "userlib",
+ "zerocopy",
+]
 
 [[package]]
 name = "task-hiffy"

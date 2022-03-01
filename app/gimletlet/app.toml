@@ -148,6 +148,16 @@ uses = ["quadspi"]
 interrupts = {"quadspi.irq" = 1}
 task-slots = ["sys"]
 
+[tasks.ecp5]
+path = "../../task/ecp5"
+name = "task-ecp5"
+priority = 3
+requires = {flash = 131072, ram = 4096}
+#features = ["leds"]
+stacksize = 2048
+start = true
+task-slots = ["sys", "spi_driver"]
+
 [tasks.idle]
 path = "../../task/idle"
 name = "task-idle"
@@ -213,9 +223,9 @@ controller = 4
 
 [config.spi.spi4.mux_options.port_e]
 outputs = [
-    {port = "E", pins = [12, 13], af = 5},
+    {port = "E", pins = [12, 14], af = 5},
 ]
-input = {port = "E", pin = 14, af = 5}
+input = {port = "E", pin = 13, af = 5}
 
 [config.spi.spi4.devices.spi4_header]
 mux = "port_e"
@@ -229,7 +239,7 @@ controller = 6
 outputs = [
     {port = "G", pins = [13, 14], af = 5},
 ]
-input = {port = "E", pin = 12, af = 5}
+input = {port = "G", pin = 12, af = 5}
 
 [config.spi.spi6.devices.spi6_header]
 mux = "port_g"
