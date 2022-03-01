@@ -1,0 +1,58 @@
+// ECP5 server IPC interface
+
+Interface(
+    name: "Ecp5",
+    ops: {
+        "enable": (
+            doc: "Enable the device (if currently disabled)",
+            reply: Result(
+                ok: "()",
+                err: CLike("Ecp5Error<Ecp5SpiError>"),
+            ),
+        ),
+        "disable": (
+            doc: "Disable the device (if currently enabled)",
+            reply: Result(
+                ok: "()",
+                err: CLike("Ecp5Error<Ecp5SpiError>"),
+            ),
+        ),
+        "state": (
+            doc: "Return the current device state",
+            reply: Result(
+                ok: (
+                    type: "DeviceState",
+                    recv: FromPrimitive("u8"),
+                ),
+                err: CLike("Ecp5Error<Ecp5SpiError>"),
+            ),
+        ),
+
+        "id": (
+            doc: "Return the device id",
+            reply: Result(
+                ok: (type: "Id"),
+                err: CLike("Ecp5Error<Ecp5SpiError>"),
+            ),
+        ),
+
+        "status": (
+            doc: "Return the device status",
+            reply: Result(
+                ok: (
+                    type: "u32",
+                    recv: FromPrimitive("u32"),
+                ),
+                err: CLike("Ecp5Error<Ecp5SpiError>"),
+            ),
+        ),
+
+        "load_default_bitstream": (
+            doc: "Load a bitstream",
+            reply: Result(
+                ok: "()",
+                err: CLike("Ecp5Error<Ecp5SpiError>"),
+            ),
+        ),
+    },
+)
