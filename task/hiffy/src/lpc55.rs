@@ -63,6 +63,8 @@ pub enum Functions {
     SpiRead((Task, usize, usize), drv_spi_api::SpiError),
     #[cfg(feature = "spi")]
     SpiWrite((Task, usize), drv_spi_api::SpiError),
+    #[cfg(feature = "spdm")]
+    SpdmExchange(usize, task_spdm_api::SpdmError),
 }
 
 #[cfg(feature = "gpio")]
@@ -278,6 +280,8 @@ pub(crate) static HIFFY_FUNCS: &[Function] = &[
     spi_read,
     #[cfg(feature = "spi")]
     spi_write,
+    #[cfg(feature = "spdm")]
+    crate::common::spdm_exchange,
 ];
 
 //

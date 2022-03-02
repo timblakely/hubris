@@ -77,6 +77,14 @@ requires = {flash = 128, ram = 256}
 stacksize = 256
 start = true
 
+[tasks.spdm]
+path = "../../task/spdm"
+name = "task-spdm"
+priority = 1
+requires = {flash = 32768, ram = 32768}
+stacksize = 16384
+start = true
+
 [tasks.syscon_driver]
 path = "../../drv/lpc55-syscon"
 name = "drv-lpc55-syscon"
@@ -155,11 +163,11 @@ task-slots = ["user_leds"]
 path = "../../task/hiffy"
 name = "task-hiffy"
 priority = 3
-features = ["lpc55", "gpio", "spi"]
+features = ["lpc55", "gpio", "spi", "spdm"]
 requires = {flash = 16384, ram = 16384 }
 stacksize = 2048
 start = true
-task-slots = ["gpio_driver"]
+task-slots = ["gpio_driver", "spdm"]
 
 [tasks.spi_loopback]
 path = "../../task/spi-loopback"
