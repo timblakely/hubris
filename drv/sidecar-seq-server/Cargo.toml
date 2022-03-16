@@ -11,7 +11,8 @@ ringbuf = {path = "../../lib/ringbuf"}
 byteorder = {version = "1.4", default-features = false}
 zerocopy = "0.6.1"
 num-traits = { version = "0.2.12", default-features = false }
-drv-stm32xx-sys-api = {path = "../stm32xx-sys-api", default-features = false}
+drv-stm32h7-rcc-api = {path = "../stm32h7-rcc-api", default-features = false}
+drv-stm32h7-gpio-api = {path = "../stm32h7-gpio-api"}
 drv-spi-api = {path = "../spi-api"}
 drv-i2c-api = {path = "../i2c-api"}
 drv-i2c-devices = {path = "../i2c-devices"}
@@ -23,7 +24,9 @@ idol-runtime = {git = "https://github.com/oxidecomputer/idolatry.git"}
 [build-dependencies]
 build-util = {path = "../../build/util"}
 build-i2c = {path = "../../build/i2c"}
+serde = { version = "1.0.114", features = ["derive"] }
+serde_json = "1.0"
 idol = {git = "https://github.com/oxidecomputer/idolatry.git"}
 
 [features]
-h753 = ["drv-stm32xx-sys-api/h753"]
+h753 = ["drv-stm32h7-rcc-api/h753"]

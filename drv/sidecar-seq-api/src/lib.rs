@@ -13,6 +13,8 @@ use zerocopy::AsBytes;
 pub enum SeqError {
     IllegalTransition = 1,
     ClockConfigFailed = 2,
+    SequencerTimeout = 3,
+    InvalidVid = 4,
 }
 
 impl From<SeqError> for u16 {
