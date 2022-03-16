@@ -12,12 +12,13 @@ mod controller_fpga;
 use ringbuf::*;
 use userlib::*;
 
-use drv_spi_api as spi_api;
+use drv_stm32xx_sys_api::{self as sys_api, Sys};
 use drv_i2c_api::{I2cDevice, ResponseCode};
-use drv_sidecar_seq_api::{PowerState, SeqError};
+use drv_spi_api::{self as spi_api, SpiDevice, SpiError};
 use idol_runtime::{NotificationHandler, RequestError};
+use drv_sidecar_seq_api::{PowerState, SeqError};
 
-task_slot!(GPIO, gpio_driver);
+task_slot!(SYS, sys);
 task_slot!(I2C, i2c_driver);
 task_slot!(SPI, spi_driver);
 
@@ -64,8 +65,7 @@ const TIMER_INTERVAL: u64 = 1000;
 struct ServerImpl {
     state: PowerState,
     clockgen: I2cDevice,
-    led: drv_stm32h7_gpio_api::PinSet,
-    led_on: bool,
+    led: sys_api::PinSet,
     deadline: u64,
     controller: controller_fpga::ControllerFpga,
     vid: Tofino2Vid,
@@ -73,42 +73,32 @@ struct ServerImpl {
 
 impl ServerImpl {
     fn led_init(&mut self) {
-        use drv_stm32h7_gpio_api::*;
+        use sys_api::*;
 
-        let gpio_driver = GPIO.get_task_id();
-        let gpio_driver = Gpio::from(gpio_driver);
+        let sys = Sys::from(SYS.get_task_id());
 
-        // Make the LED an output.
-        gpio_driver
-            .configure_output(
-                self.led,
-                OutputType::PushPull,
-                Speed::High,
-                Pull::None,
-            )
-            .unwrap();
+        sys.gpio_configure_output(
+            self.led,
+            OutputType::PushPull,
+            Speed::Low,
+            Pull::Up,
+        )
+        .unwrap();
     }
 
     fn led_on(&mut self) {
-        use drv_stm32h7_gpio_api::*;
-
-        let gpio_driver = GPIO.get_task_id();
-        let gpio_driver = Gpio::from(gpio_driver);
-        gpio_driver.set_to(self.led, true).unwrap();
-        self.led_on = true;
+        Sys::from(SYS.get_task_id()).gpio_set(self.led).unwrap();
     }
 
     fn led_off(&mut self) {
-        use drv_stm32h7_gpio_api::*;
-
-        let gpio_driver = GPIO.get_task_id();
-        let gpio_driver = Gpio::from(gpio_driver);
-        gpio_driver.set_to(self.led, false).unwrap();
-        self.led_on = false;
+        Sys::from(SYS.get_task_id()).gpio_reset(self.led).unwrap();
     }
 
     fn led_toggle(&mut self) {
-        if self.led_on {
+        let sys = Sys::from(SYS.get_task_id());
+        let led_on = sys.gpio_read(self.led).unwrap() != 0;
+
+        if led_on {
             self.led_off();
         } else {
             self.led_on();
@@ -119,7 +109,9 @@ impl ServerImpl {
         use controller_fpga::*;
 
         let mut en = [0u8];
-        self.controller.read_bytes(Addr::TOFINO_EN, &mut en).unwrap();
+        self.controller
+            .read_bytes(Addr::TOFINO_EN, &mut en)
+            .unwrap();
         return en[0] == 1;
     }
 
@@ -135,7 +127,9 @@ impl ServerImpl {
         use controller_fpga::*;
 
         let mut seq_state = [0u8];
-        self.controller.read_bytes(Addr::TOFINO_SEQ_STATE, &mut seq_state).unwrap();
+        self.controller
+            .read_bytes(Addr::TOFINO_SEQ_STATE, &mut seq_state)
+            .unwrap();
         return seq_state[0];
     }
 
@@ -143,7 +137,9 @@ impl ServerImpl {
         use controller_fpga::*;
 
         let mut seq_error = [0u8];
-        self.controller.read_bytes(Addr::TOFINO_SEQ_ERROR, &mut seq_error).unwrap();
+        self.controller
+            .read_bytes(Addr::TOFINO_SEQ_ERROR, &mut seq_error)
+            .unwrap();
         return seq_error[0];
     }
 
@@ -151,7 +147,9 @@ impl ServerImpl {
         use controller_fpga::*;
 
         let mut vid = [0u8];
-        self.controller.read_bytes(Addr::TOFINO_VID, &mut vid).unwrap();
+        self.controller
+            .read_bytes(Addr::TOFINO_VID, &mut vid)
+            .unwrap();
 
         self.vid = match vid[0] {
             0b1111 => Tofino2Vid::V0P922,
@@ -175,7 +173,7 @@ impl ServerImpl {
             use drv_i2c_devices::raa229618::Raa229618;
             let i2c = I2C.get_task_id();
 
-            let (device, rail) = i2c_config::pmbus::tf2_vddcore(i2c);
+            let (device, rail) = i2c_config::pmbus::v0p8_tf2_vdd_core(i2c);
             let mut vddcore = Raa229618::new(&device, rail);
 
             vddcore.set_vout(value).unwrap();
@@ -303,8 +301,7 @@ fn main() -> ! {
     let task = I2C.get_task_id();
     let spi = spi_api::Spi::from(SPI.get_task_id());
     let controller =
-        controller_fpga::ControllerFpga::new(
-            spi.device(CONTROLLER_FPGA_SPI_DEVICE));
+        controller_fpga::ControllerFpga::new(spi.device(BOARD_CONTROLLER_APP));
 
     ringbuf_entry!(Trace::A2);
 
@@ -323,8 +320,7 @@ fn main() -> ! {
     let mut server = ServerImpl {
         state: PowerState::A2,
         clockgen: devices::idt8a34001(task)[0],
-        led: drv_stm32h7_gpio_api::Port::C.pin(3),
-        led_on: false,
+        led: sys_api::Port::C.pin(3),
         deadline,
         controller: controller,
         vid: Tofino2Vid::Invalid,
@@ -340,7 +336,8 @@ fn main() -> ! {
 
 cfg_if::cfg_if! {
     if #[cfg(target_board = "sidecar-1")] {
-        const CONTROLLER_FPGA_SPI_DEVICE: u8 = 0;
+        const BOARD_CONTROLLER_ECP5: u8 = 0;
+        const BOARD_CONTROLLER_APP: u8 = 1;
     } else {
         compiler_error!("unsupported target board");
     }
