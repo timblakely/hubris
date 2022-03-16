@@ -4,15 +4,15 @@
 
 #![no_std]
 
-pub mod types;
 pub mod spi;
+pub mod types;
 
 use ringbuf::*;
 use userlib::hl::sleep_for;
 use zerocopy::{AsBytes, FromBytes};
 
-pub use types::*;
 use spi::*;
+pub use types::*;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 enum Trace {
@@ -33,48 +33,44 @@ ringbuf!(Trace, 16, Trace::None);
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 #[repr(u16)]
-pub enum Ecp5Error<Ecp5ImplError> {
-    Ecp5ImplError(Ecp5ImplError),
+pub enum Ecp5Error {
+    ImplError(u8),
     BitstreamError(BitstreamError),
     PortDisabled,
     InvalidMode,
 }
 
-impl<Ecp5ImplError> From<Ecp5ImplError> for Ecp5Error<Ecp5ImplError> {
-    fn from(e: Ecp5ImplError) -> Self {
-        Self::Ecp5ImplError(e)
-    }
-}
+pub trait Ecp5Impl {
+    type Error;
 
-pub trait Ecp5Impl<Ecp5ImplError> {
     /// PROGAM_N interface. This pin acts as a device reset and when asserted
     /// low force to (re)start the bitstream loading process.
     ///
     /// See FPGA-TN-02039-2.0, 4.5.2 for details.
-    fn program_n(&self) -> Result<bool, Ecp5ImplError>;
-    fn set_program_n(&self, asserted: bool) -> Result<(), Ecp5ImplError>;
+    fn program_n(&self) -> Result<bool, Self::Error>;
+    fn set_program_n(&self, asserted: bool) -> Result<(), Self::Error>;
 
     /// INIT_N interface. This pin can be driven after reset/power up to keep
     /// the device from entering Configuration state. As input it signals
     /// Initialization complete or an error occured during bitstream loading.
     ///
     /// See FPGA-TN-02039-2.0, 4.5.3 for details.
-    fn init_n(&self) -> Result<bool, Ecp5ImplError>;
-    fn set_init_n(&self, asserted: bool) -> Result<(), Ecp5ImplError>;
+    fn init_n(&self) -> Result<bool, Self::Error>;
+    fn set_init_n(&self, asserted: bool) -> Result<(), Self::Error>;
 
     /// DONE interface. This pin signals the device is in User Mode. Asserting
     /// the pin keeps the device from entering User Mode after Configuration.
     ///
     /// See FPGA-TN-02039-2.0, 4.5.4 for details.
-    fn done(&self) -> Result<bool, Ecp5ImplError>;
-    fn set_done(&self, asserted: bool) -> Result<(), Ecp5ImplError>;
+    fn done(&self) -> Result<bool, Self::Error>;
+    fn set_done(&self, asserted: bool) -> Result<(), Self::Error>;
 
     /// A generic interface to send commands and read/write data from a
     /// configuration port. This interface is intended to be somewhat transport
     /// agnostic so either SPI or JTAG could be used if desired.
-    fn write_command(&self, c: Command) -> Result<(), Ecp5ImplError>;
-    fn read(&self, buf: &mut [u8]) -> Result<(), Ecp5ImplError>;
-    fn write(&self, buf: &[u8]) -> Result<(), Ecp5ImplError>;
+    fn write_command(&self, c: Command) -> Result<(), Self::Error>;
+    fn read(&self, buf: &mut [u8]) -> Result<(), Self::Error>;
+    fn write(&self, buf: &[u8]) -> Result<(), Self::Error>;
 
     /// The command interface may exist on a shared medium such as SPI. The
     /// following primitives allow the upper half of the driver to issue atomic
@@ -82,21 +78,25 @@ pub trait Ecp5Impl<Ecp5ImplError> {
     ///
     /// If no lock control of the medium is needed these can be implemented as
     /// no-op.
-    fn lock(&self) -> Result<(), Ecp5ImplError>;
-    fn release(&self) -> Result<(), Ecp5ImplError>;
+    fn lock(&self) -> Result<(), Self::Error>;
+    fn release(&self) -> Result<(), Self::Error>;
 }
 
+/// Opague ECP5 device handle.
 pub struct Ecp5<'a, Ecp5ImplError> {
-    device: &'a dyn Ecp5Impl<Ecp5ImplError>,
+    device: &'a dyn Ecp5Impl<Error = Ecp5ImplError>,
 }
 
-impl<'a, Ecp5ImplError> Ecp5<'a, Ecp5ImplError> {
-    pub fn new(device: &'a dyn Ecp5Impl<Ecp5ImplError>) -> Self {
+impl<'a, Ecp5ImplError> Ecp5<'a, Ecp5ImplError>
+where
+    Ecp5Error: From<Ecp5ImplError>,
+{
+    pub fn new(device: &'a dyn Ecp5Impl<Error = Ecp5ImplError>) -> Self {
         Ecp5 { device }
     }
 
     /// Return the device state based on the current state of its control pins.
-    pub fn state(&self) -> Result<DeviceState, Ecp5Error<Ecp5ImplError>> {
+    pub fn state(&self) -> Result<DeviceState, Ecp5Error> {
         if !self.device.program_n()? {
             Ok(DeviceState::Disabled)
         } else {
@@ -112,20 +112,20 @@ impl<'a, Ecp5ImplError> Ecp5<'a, Ecp5ImplError> {
         }
     }
 
-    pub fn disable(&self) -> Result<(), Ecp5Error<Ecp5ImplError>> {
+    pub fn disable(&self) -> Result<(), Ecp5Error> {
         self.device.set_program_n(false)?;
         ringbuf_entry!(Trace::Disabled);
         Ok(())
     }
 
-    pub fn enable(&self) -> Result<(), Ecp5Error<Ecp5ImplError>> {
+    pub fn enable(&self) -> Result<(), Ecp5Error> {
         self.device.set_program_n(true)?;
         ringbuf_entry!(Trace::Enabled);
         sleep_for(50);
         Ok(())
     }
 
-    pub fn reset(&self) -> Result<(), Ecp5Error<Ecp5ImplError>> {
+    pub fn reset(&self) -> Result<(), Ecp5Error> {
         self.disable()?;
         sleep_for(50);
         self.enable()
@@ -133,10 +133,7 @@ impl<'a, Ecp5ImplError> Ecp5<'a, Ecp5ImplError> {
 
     /// Send a command to the device which does not return or require additional
     /// data. FPGA-TN-02039-2.0, 6.2.5 refers to this as a Class C command.
-    pub fn send_command(
-        &self,
-        c: Command,
-    ) -> Result<(), Ecp5Error<Ecp5ImplError>> {
+    pub fn send_command(&self, c: Command) -> Result<(), Ecp5Error> {
         self.device.lock()?;
         self.device.write_command(c)?;
         self.device.release()?;
@@ -149,7 +146,7 @@ impl<'a, Ecp5ImplError> Ecp5<'a, Ecp5ImplError> {
     pub fn read<T: Default + AsBytes + FromBytes>(
         &self,
         c: Command,
-    ) -> Result<T, Ecp5Error<Ecp5ImplError>> {
+    ) -> Result<T, Ecp5Error> {
         let mut buf = T::default();
 
         self.device.lock()?;
@@ -160,11 +157,11 @@ impl<'a, Ecp5ImplError> Ecp5<'a, Ecp5ImplError> {
         Ok(buf)
     }
 
-    pub fn read16(&self, c: Command) -> Result<u16, Ecp5Error<Ecp5ImplError>> {
+    pub fn read16(&self, c: Command) -> Result<u16, Ecp5Error> {
         Ok(u16::from_be(self.read(c)?))
     }
 
-    pub fn read32(&self, c: Command) -> Result<u32, Ecp5Error<Ecp5ImplError>> {
+    pub fn read32(&self, c: Command) -> Result<u32, Ecp5Error> {
         let v = u32::from_be(self.read(c)?);
 
         match c {
@@ -188,59 +185,49 @@ impl<'a, Ecp5ImplError> Ecp5<'a, Ecp5ImplError> {
         Ok(v)
     }
 
-    pub fn write(&self, buf: &[u8]) -> Result<(), Ecp5Error<Ecp5ImplError>> {
+    pub fn write(&self, buf: &[u8]) -> Result<(), Ecp5Error> {
         Ok(self.device.write(buf)?)
     }
 
     /// Read the device ID.
-    pub fn id(&self) -> Result<Id, Ecp5Error<Ecp5ImplError>> {
+    pub fn id(&self) -> Result<Id, Ecp5Error> {
         let id = self.read32(Command::ReadId)?;
         Ok(Id(id, Device::from(id)))
     }
 
     /// Read the device user code.
-    pub fn user_code(&self) -> Result<u32, Ecp5Error<Ecp5ImplError>> {
+    pub fn user_code(&self) -> Result<u32, Ecp5Error> {
         self.read32(Command::ReadUserCode)
     }
 
     /// Read the Status register
-    pub fn status(&self) -> Result<Status, Ecp5Error<Ecp5ImplError>> {
+    pub fn status(&self) -> Result<Status, Ecp5Error> {
         Ok(Status(self.read32(Command::ReadStatus)?))
     }
 
-    pub fn enable_configuration_mode(
-        &self,
-    ) -> Result<(), Ecp5Error<Ecp5ImplError>> {
+    pub fn enable_configuration_mode(&self) -> Result<(), Ecp5Error> {
         self.send_command(Command::EnableConfigurationMode)
     }
 
-    pub fn disable_configuration_mode(
-        &self,
-    ) -> Result<(), Ecp5Error<Ecp5ImplError>> {
+    pub fn disable_configuration_mode(&self) -> Result<(), Ecp5Error> {
         self.send_command(Command::DisableConfigurationMode)
     }
 
-    pub fn await_not_busy(
-        &self,
-        sleep_interval: u64,
-    ) -> Result<(), Ecp5Error<Ecp5ImplError>> {
+    pub fn await_not_busy(&self, sleep_interval: u64) -> Result<(), Ecp5Error> {
         while self.status()?.busy() {
             sleep_for(sleep_interval);
         }
         Ok(())
     }
 
-    pub fn await_done(
-        &self,
-        sleep_interval: u64,
-    ) -> Result<(), Ecp5Error<Ecp5ImplError>> {
+    pub fn await_done(&self, sleep_interval: u64) -> Result<(), Ecp5Error> {
         while !self.status()?.done() {
             sleep_for(sleep_interval);
         }
         Ok(())
     }
 
-    pub fn initiate_bitstream_load(&self) -> Result<(), Ecp5Error<Ecp5ImplError>> {
+    pub fn initiate_bitstream_load(&self) -> Result<(), Ecp5Error> {
         // Put device in configuration mode if required.
         if !self.status()?.write_enabled() {
             self.enable_configuration_mode()?;
@@ -259,7 +246,7 @@ impl<'a, Ecp5ImplError> Ecp5<'a, Ecp5ImplError> {
         Ok(())
     }
 
-    pub fn finalize_bitstream_load(&self) -> Result<(), Ecp5Error<Ecp5ImplError>> {
+    pub fn finalize_bitstream_load(&self) -> Result<(), Ecp5Error> {
         self.device.release()?;
         self.await_not_busy(10)?;
 
@@ -295,5 +282,33 @@ impl<'a, Ecp5ImplError> Ecp5<'a, Ecp5ImplError> {
         // be disabled at this point, i.e. performing a read of the ID or Status
         // registers will result in a PortDisabled error.
         Ok(())
+    }
+}
+
+/*
+impl<Ecp5Impl> From<Ecp5Impl> for Ecp5Error {
+    fn from(e: Ecp5Impl) -> Self {
+        Self::ImplError(u8::from(e))
+    }
+}
+*/
+
+impl From<Ecp5Error> for u16 {
+    fn from(e: Ecp5Error) -> Self {
+        match e {
+            Ecp5Error::ImplError(c) => 0x100 | (c as u16),
+            Ecp5Error::BitstreamError(e) => match e {
+                BitstreamError::None => 0x200 | 0,
+                BitstreamError::InvalidId => 0x200 | 1,
+                BitstreamError::IllegalCommand => 0x200 | 2,
+                BitstreamError::CrcMismatch => 0x200 | 3,
+                BitstreamError::InvalidPreamble => 0x200 | 4,
+                BitstreamError::UserAbort => 0x200 | 5,
+                BitstreamError::DataOverflow => 0x200 | 6,
+                BitstreamError::SramDataOverflow => 0x200 | 7,
+            },
+            Ecp5Error::PortDisabled => 0x300,
+            Ecp5Error::InvalidMode => 0x400,
+        }
     }
 }

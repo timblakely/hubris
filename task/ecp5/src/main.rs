@@ -21,7 +21,7 @@ static COMPRESSED_BITSTREAM: &[u8] =
 fn load_compressed_bitstream<Ecp5ImplError>(
     ecp5: &Ecp5<Ecp5ImplError>,
     bitstream: &mut &[u8],
-) -> Result<(), Ecp5Error<Ecp5ImplError>> {
+) -> Result<(), Ecp5Error> {
     let mut decompressor = gnarle::Decompressor::default();
     let mut chunk = [0; 256];
 
@@ -29,8 +29,7 @@ fn load_compressed_bitstream<Ecp5ImplError>(
 
     // Clock out the bitstream in 256 byte chunks.
     while !bitstream.is_empty() || !decompressor.is_idle() {
-        let out =
-            gnarle::decompress(&mut decompressor, bitstream, &mut chunk);
+        let out = gnarle::decompress(&mut decompressor, bitstream, &mut chunk);
         ecp5.write(out)?;
     }
 
@@ -88,12 +87,11 @@ struct ServerImpl<'a, Ecp5SpiError> {
     ecp5: Ecp5<'a, Ecp5SpiError>,
 }
 
-type RequestError = idol_runtime::RequestError<Ecp5Error<Ecp5SpiError>>;
+type RequestError = idol_runtime::RequestError<Ecp5Error>;
 
 impl<'a, Ecp5SpiError> InOrderEcp5Impl for ServerImpl<'a, Ecp5SpiError>
-where
-    idol_runtime::RequestError<Ecp5Error<spi::Ecp5SpiError>>:
-        From<Ecp5Error<Ecp5SpiError>>,
+//where
+//    idol_runtime::RequestError<Ecp5Error>: From<Ecp5Error>,
 {
     fn enable(&mut self, _: &RecvMessage) -> Result<(), RequestError> {
         Ok(self.ecp5.enable()?)

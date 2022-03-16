@@ -2,9 +2,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+use super::*;
 use drv_spi_api::{self as spi_api, SpiDevice, SpiError};
 use drv_stm32xx_sys_api::{self as sys_api, GpioError, Sys};
-use super::*;
 
 /// Ecp5Spi is the simplest implementation of the Ecp5Impl interface using the
 /// SPI and Sys APIs. It assumes the PROGRAM_N, INIT_N and DONE signals are
@@ -37,64 +37,49 @@ impl From<SpiError> for Ecp5SpiError {
     }
 }
 
-impl From<Ecp5Error<Ecp5SpiError>> for u16 {
-    fn from(e: Ecp5Error<Ecp5SpiError>) -> u16 {
+impl From<Ecp5SpiError> for u8 {
+    fn from(e: Ecp5SpiError) -> u8 {
         match e {
-            Ecp5Error::Ecp5ImplError(e) => match e {
-                Ecp5SpiError::GpioError(e) => match e {
-                    GpioError::BadArg => 2,
-                },
-                Ecp5SpiError::SpiError(e) => match e {
-                    SpiError::BadTransferSize => 3,
-                    SpiError::ServerRestarted => 4,
-                    SpiError::NothingToRelease => 5,
-                    SpiError::BadDevice => 6,
-                    SpiError::DataOverrun => 7,
-                },
+            Ecp5SpiError::GpioError(e) => match e {
+                GpioError::BadArg => 2,
             },
-            Ecp5Error::BitstreamError(e) => match e {
-                BitstreamError::None => 16,
-                BitstreamError::InvalidId => 17,
-                BitstreamError::IllegalCommand => 18,
-                BitstreamError::CrcMismatch => 19,
-                BitstreamError::InvalidPreamble => 20,
-                BitstreamError::UserAbort => 21,
-                BitstreamError::DataOverflow => 22,
-                BitstreamError::SramDataOverflow => 23,
+            Ecp5SpiError::SpiError(e) => match e {
+                SpiError::BadTransferSize => 3,
+                SpiError::ServerRestarted => 4,
+                SpiError::NothingToRelease => 5,
+                SpiError::BadDevice => 6,
+                SpiError::DataOverrun => 7,
             },
-            Ecp5Error::PortDisabled => 32,
-            Ecp5Error::InvalidMode => 33
         }
     }
 }
 
-impl core::convert::TryFrom<u32> for Ecp5Error<Ecp5SpiError> {
-    type Error = ();
+impl From<Ecp5SpiError> for Ecp5Error {
+    fn from(e: Ecp5SpiError) -> Ecp5Error {
+        Ecp5Error::ImplError(u8::from(e))
+    }
+}
 
+/*
+impl core::convert::TryFrom<u32> for Ecp5SpiError {
+    type Error = ();
     fn try_from(x: u32) -> Result<Self, Self::Error> {
         match x {
-            2 => Ok(Ecp5Error::Ecp5ImplError(Ecp5SpiError::GpioError(GpioError::BadArg))),
-            3 => Ok(Ecp5Error::Ecp5ImplError(Ecp5SpiError::SpiError(SpiError::BadTransferSize))),
-            4 => Ok(Ecp5Error::Ecp5ImplError(Ecp5SpiError::SpiError(SpiError::ServerRestarted))),
-            5 => Ok(Ecp5Error::Ecp5ImplError(Ecp5SpiError::SpiError(SpiError::NothingToRelease))),
-            6 => Ok(Ecp5Error::Ecp5ImplError(Ecp5SpiError::SpiError(SpiError::BadDevice))),
-            7 => Ok(Ecp5Error::Ecp5ImplError(Ecp5SpiError::SpiError(SpiError::DataOverrun))),
-            16 => Ok(Ecp5Error::BitstreamError(BitstreamError::None)),
-            17 => Ok(Ecp5Error::BitstreamError(BitstreamError::InvalidId)),
-            18 => Ok(Ecp5Error::BitstreamError(BitstreamError::IllegalCommand)),
-            19 => Ok(Ecp5Error::BitstreamError(BitstreamError::CrcMismatch)),
-            20 => Ok(Ecp5Error::BitstreamError(BitstreamError::InvalidPreamble)),
-            21 => Ok(Ecp5Error::BitstreamError(BitstreamError::UserAbort)),
-            22 => Ok(Ecp5Error::BitstreamError(BitstreamError::DataOverflow)),
-            23 => Ok(Ecp5Error::BitstreamError(BitstreamError::SramDataOverflow)),
-            32 => Ok(Ecp5Error::PortDisabled),
-            33 => Ok(Ecp5Error::InvalidMode),
+            2 => Ok(Ecp5SpiError::GpioError(GpioError::BadArg))),
+            3 => Ok(Ecp5SpiError::SpiError(SpiError::BadTransferSize))),
+            4 => Ok(Ecp5SpiError::SpiError(SpiError::ServerRestarted))),
+            5 => Ok(Ecp5SpiError::SpiError(SpiError::NothingToRelease))),
+            6 => Ok(Ecp5SpiError::SpiError(SpiError::BadDevice))),
+            7 => Ok(Ecp5SpiError::SpiError(SpiError::DataOverrun))),
             _ => Err(()),
         }
     }
 }
+*/
 
-impl Ecp5Impl<Ecp5SpiError> for Ecp5Spi {
+impl Ecp5Impl for Ecp5Spi {
+    type Error = Ecp5SpiError;
+
     fn program_n(&self) -> Result<bool, Ecp5SpiError> {
         Ok(self.sys.gpio_read(self.program_n)? != 0)
     }

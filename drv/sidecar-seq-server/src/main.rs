@@ -12,15 +12,16 @@ mod controller_fpga;
 use ringbuf::*;
 use userlib::*;
 
-use drv_stm32xx_sys_api::{self as sys_api, Sys};
 use drv_i2c_api::{I2cDevice, ResponseCode};
-use drv_spi_api::{self as spi_api, SpiDevice, SpiError};
-use idol_runtime::{NotificationHandler, RequestError};
 use drv_sidecar_seq_api::{PowerState, SeqError};
+use drv_spi_api::{self as spi_api, SpiDevice, SpiError};
+use drv_stm32xx_sys_api::{self as sys_api, Sys};
+use idol_runtime::{NotificationHandler, RequestError};
 
 task_slot!(SYS, sys);
 task_slot!(I2C, i2c_driver);
 task_slot!(SPI, spi_driver);
+task_slot!(ECP5, ecp5);
 
 mod payload;
 
@@ -42,6 +43,7 @@ enum Tofino2Vid {
 
 #[derive(Copy, Clone, PartialEq)]
 enum Trace {
+    AwaitingEcp5InUserMode,
     A2,
     GetState,
     SetState(PowerState, PowerState),
@@ -64,6 +66,7 @@ const TIMER_INTERVAL: u64 = 1000;
 
 struct ServerImpl {
     state: PowerState,
+    ecp5:
     clockgen: I2cDevice,
     led: sys_api::PinSet,
     deadline: u64,
@@ -72,6 +75,16 @@ struct ServerImpl {
 }
 
 impl ServerImpl {
+    fn ecp5_state() -> Result<Ecp5::DeviceState, Ecp5Error> {
+
+    }
+
+    fn await_ecp5_in_user_mode() -> Result<(), Ecp5Error> {
+        ringbuf_entry!(Trace::AwaitingEcp5InUserMode);
+
+
+    }
+
     fn led_init(&mut self) {
         use sys_api::*;
 
@@ -298,8 +311,8 @@ impl NotificationHandler for ServerImpl {
 
 #[export_name = "main"]
 fn main() -> ! {
-    let task = I2C.get_task_id();
     let spi = spi_api::Spi::from(SPI.get_task_id());
+    let ecp5 = ECP5.get_task_id();
     let controller =
         controller_fpga::ControllerFpga::new(spi.device(BOARD_CONTROLLER_APP));
 
@@ -319,7 +332,7 @@ fn main() -> ! {
 
     let mut server = ServerImpl {
         state: PowerState::A2,
-        clockgen: devices::idt8a34001(task)[0],
+        clockgen: devices::idt8a34001(I2C.get_task_id())[0],
         led: sys_api::Port::C.pin(3),
         deadline,
         controller: controller,

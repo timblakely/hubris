@@ -7,14 +7,14 @@ Interface(
             doc: "Enable the device (if currently disabled)",
             reply: Result(
                 ok: "()",
-                err: CLike("Ecp5Error<Ecp5SpiError>"),
+                err: CLike("Ecp5Error"),
             ),
         ),
         "disable": (
             doc: "Disable the device (if currently enabled)",
             reply: Result(
                 ok: "()",
-                err: CLike("Ecp5Error<Ecp5SpiError>"),
+                err: CLike("Ecp5Error"),
             ),
         ),
         "state": (
@@ -24,7 +24,7 @@ Interface(
                     type: "DeviceState",
                     recv: FromPrimitive("u8"),
                 ),
-                err: CLike("Ecp5Error<Ecp5SpiError>"),
+                err: CLike("Ecp5Error"),
             ),
         ),
 
@@ -32,7 +32,7 @@ Interface(
             doc: "Return the device id",
             reply: Result(
                 ok: (type: "Id"),
-                err: CLike("Ecp5Error<Ecp5SpiError>"),
+                err: CLike("Ecp5Error"),
             ),
         ),
 
@@ -43,7 +43,7 @@ Interface(
                     type: "u32",
                     recv: FromPrimitive("u32"),
                 ),
-                err: CLike("Ecp5Error<Ecp5SpiError>"),
+                err: CLike("Ecp5Error"),
             ),
         ),
 
@@ -51,7 +51,7 @@ Interface(
             doc: "Load a bitstream",
             reply: Result(
                 ok: "()",
-                err: CLike("Ecp5Error<Ecp5SpiError>"),
+                err: CLike("Ecp5Error"),
             ),
         ),
     },
