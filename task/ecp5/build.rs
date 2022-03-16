@@ -9,6 +9,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let ecp5_bitstream_name = match env::var("HUBRIS_BOARD")?.as_str() {
         "gimletlet-2" => "blinky_ecp5_evn.compressed.bit",
+        //"sidecar-1" => "sidecar_main_board_controller.bit",
         "sidecar-1" => "sidecar_main.bit",
         _ => {
             println!("No FPGA image for target board");

@@ -58,7 +58,7 @@ fn main() -> ! {
                 init_n: sys_api::Port::D.pin(12),
                 program_n: sys_api::Port::B.pin(10),
             };
-            let skip_default_reset_on_boot = true;
+            let skip_default_reset_on_boot = false;
         } else {
             compile_error!("Board is not supported by the task/ecp5");
         }
