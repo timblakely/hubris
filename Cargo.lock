@@ -2976,6 +2976,7 @@ dependencies = [
  "hubris-num-tasks",
  "hypocalls",
  "num-traits",
+ "task-config",
  "test-api",
  "userlib",
  "zerocopy",
