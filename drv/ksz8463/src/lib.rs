@@ -281,9 +281,11 @@ impl Ksz8463 {
         sleep_for(10);
         self.write(Register::GRR, 0)?;
 
+        /*
         // Configure for 100BASE-FX operation
         self.modify(Register::CFGR, |r| *r &= !0xc0)?;
         self.modify(Register::DSP_CNTRL_6, |r| *r &= !0x2000)?;
+        */
 
         match vlan_mode {
             // In `VLanMode::Optional`, we allow tags on the upstream ports,

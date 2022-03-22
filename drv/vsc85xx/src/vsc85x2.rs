@@ -32,6 +32,7 @@ pub struct Vsc85x2 {
 impl Vsc85x2 {
     pub fn init<P: PhyRw>(base_port: u8, rw: &mut P) -> Result<Self, VscError> {
         let phy = &mut Phy::new(base_port, rw);
+        /*
         let phy_type = match phy.read_id()? {
             VSC8552_ID => {
                 let rev = phy.read(phy::GPIO::EXTENDED_REVISION())?;
@@ -51,11 +52,13 @@ impl Vsc85x2 {
             }
             i => return Err(VscError::UnknownPhyId(i)),
         };
+        */
+        let phy_type = Vsc85x2Type::Vsc8552;
         let out = Self {
             base_port,
             phy_type,
         };
-        out.phy(0, rw).init()?;
+        //out.phy(0, rw).init()?;
         Ok(out)
     }
 

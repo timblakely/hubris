@@ -44,6 +44,8 @@ pub struct Status {
 #[derive(Copy, Clone, Debug, PartialEq)]
 enum Trace {
     None,
+    Vsc85x2ConfigureDone,
+    Ksz8463ConfigureDone,
     Ksz8463Err { port: u8, err: SpiError },
     Vsc85x2Err { port: u8, err: VscError },
     Status(Status),
@@ -83,10 +85,12 @@ impl Config {
         // The VSC8552 connects the KSZ switch to the management network
         // over SGMII
         let vsc85x2 = self.configure_vsc85x2(sys, eth);
+        ringbuf_entry!(Trace::Vsc85x2ConfigureDone);
 
         // The KSZ8463 connects to the SP over RMII, then sends data to the
         // VSC8552 over 100-BASE FX
         let ksz8463 = self.configure_ksz8463(sys);
+        ringbuf_entry!(Trace::Ksz8463ConfigureDone);
 
         Bsp { ksz8463, vsc85x2 }
     }
@@ -124,6 +128,7 @@ impl Config {
     }
 
     fn configure_vsc85x2(&self, sys: &Sys, eth: &mut Ethernet) -> Vsc85x2 {
+        /*
         // TODO: wait for PLL lock to happen here
 
         // Start with reset low and COMA_MODE high
@@ -174,15 +179,18 @@ impl Config {
 
         sys.gpio_set(self.vsc85x2_nrst).unwrap();
         sleep_for(120); // Wait for the chip to come out of reset
+        */
 
         // Build handle for the VSC85x2 PHY, then initialize it
         let rw = &mut MiimBridge::new(eth);
         let vsc85x2 = Vsc85x2::init(self.vsc85x2_base_port, rw);
 
+        /*
         // Disable COMA_MODE
         if let Some(coma_mode) = self.vsc85x2_coma_mode {
             sys.gpio_reset(coma_mode).unwrap();
         }
+        */
 
         vsc85x2.unwrap() // TODO
     }
@@ -227,6 +235,7 @@ impl Bsp {
                 }
             }
 
+            /*
             // The VSC85x2 numbers its ports starting at 0
             let port = i as u8;
             let mut phy = self.vsc85x2.phy(port, rw);
@@ -264,6 +273,7 @@ impl Bsp {
                 }
                 Err(err) => ringbuf_entry!(Trace::Vsc85x2Err { port, err }),
             }
+            */
         }
         ringbuf_entry!(Trace::Status(s));
     }
