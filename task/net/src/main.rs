@@ -207,7 +207,7 @@ fn main() -> ! {
             if let Some(wake_interval) = bsp::WAKE_INTERVAL {
                 let now = sys_get_timer().now;
                 if now >= wake_target_time {
-                    server.wake();
+                    //server.wake();
                     wake_target_time = now + wake_interval;
                 }
                 sys_set_timer(Some(wake_target_time), WAKE_IRQ);

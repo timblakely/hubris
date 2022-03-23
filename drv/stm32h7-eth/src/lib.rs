@@ -468,6 +468,7 @@ impl<'a> smoltcp::phy::Device<'a> for Ethernet {
         }
     }
 
+    #[inline(never)]
     fn transmit(&'a mut self) -> Option<Self::TxToken> {
         if self.can_send() {
             Some(OurTxToken(self))

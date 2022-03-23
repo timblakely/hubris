@@ -158,7 +158,8 @@ impl idl::InOrderNetImpl for ServerImpl<'_> {
             Err(_e) => {
                 // uhhhh TODO
                 // TODO this is not quite right
-                Err(NetError::QueueEmpty.into())
+                panic!();
+                //Err(NetError::QueueEmpty.into())
             }
         }
     }
