@@ -447,10 +447,13 @@ pub(crate) fn spdm_send(
 
     if stack.len() < 1 {
         // return Err(Failure::Fault(Fault::MissingParameters));
-        return Err(Failure::Fault(Fault::EmptyParameter((stack.len() & 0xff) as u8)));
+        return Err(Failure::Fault(Fault::EmptyParameter(
+            (stack.len() & 0xff) as u8,
+        )));
     }
     let frame = &stack[stack.len() - 1..];
-    let length = frame[0].ok_or(Failure::Fault(Fault::BadParameter(0)))? as usize;
+    let length =
+        frame[0].ok_or(Failure::Fault(Fault::BadParameter(0)))? as usize;
     if length > data.len() {
         return Err(Failure::Fault(Fault::AccessOutOfBounds));
     }
@@ -486,7 +489,8 @@ pub(crate) fn spdm_exchange(
     use task_spdm_api as spdm;
 
     let frame = &stack[stack.len() - 1..];
-    let length = frame[0].ok_or(Failure::Fault(Fault::BadParameter(0)))? as usize;
+    let length =
+        frame[0].ok_or(Failure::Fault(Fault::BadParameter(0)))? as usize;
     if length > data.len() {
         return Err(Failure::Fault(Fault::AccessOutOfBounds));
     }
@@ -496,5 +500,21 @@ pub(crate) fn spdm_exchange(
     let maxrlen = rval.len();
     let sink = &mut rval[..maxrlen];
     let rlen = func_err(server.exchange(length, source, sink))?;
+    Ok(rlen)
+}
+
+#[cfg(feature = "spdm")]
+task_slot!(ROT_SPROCKET, rot_sprocket);
+
+#[cfg(feature = "rot-sprocket")]
+pub(crate) fn rot_sprocket_get_endorsements(
+    _stack: &[Option<u32>],
+    request: &[u8],
+    response: &mut [u8],
+) -> Result<usize, Failure> {
+    use task_rot_sprocket_api as sprocket;
+
+    let server = sprocket::RotSprocket::from(ROT_SPROCKET.get_task_id());
+    let rlen = func_err(server.get_endorsements(request, response))?;
     Ok(rlen)
 }

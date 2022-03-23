@@ -50,6 +50,7 @@ members = [
     "task/thermal",
     "task/thermal-api",
     "task/udpecho",
+    "task/rot-sprocket",
 
     "drv/stm32fx-rcc",
     "drv/stm32fx-usart",

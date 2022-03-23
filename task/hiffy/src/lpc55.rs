@@ -65,6 +65,8 @@ pub enum Functions {
     SpiWrite((Task, usize), drv_spi_api::SpiError),
     #[cfg(feature = "spdm")]
     SpdmExchange(usize, task_spdm_api::SpdmError),
+    #[cfg(feature = "rot-sprocket")]
+    RotSprocketGetEndorsements(usize, task_rot_sprocket_api::SprocketsError),
 }
 
 #[cfg(feature = "gpio")]
@@ -282,6 +284,8 @@ pub(crate) static HIFFY_FUNCS: &[Function] = &[
     spi_write,
     #[cfg(feature = "spdm")]
     crate::common::spdm_exchange,
+    #[cfg(feature = "rot-sprocket")]
+    crate::common::rot_sprocket_get_endorsements,
 ];
 
 //

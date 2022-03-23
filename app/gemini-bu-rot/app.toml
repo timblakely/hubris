@@ -85,6 +85,14 @@ requires = {flash = 32768, ram = 32768}
 stacksize = 16384
 start = true
 
+[tasks.rot_sprocket]
+path = "../../task/rot-sprocket"
+name = "task-rot-sprocket"
+priority = 1
+requires = {flash = 32768, ram = 16384}
+stacksize = 8096
+start = true
+
 [tasks.syscon_driver]
 path = "../../drv/lpc55-syscon"
 name = "drv-lpc55-syscon"
@@ -163,11 +171,11 @@ task-slots = ["user_leds"]
 path = "../../task/hiffy"
 name = "task-hiffy"
 priority = 3
-features = ["lpc55", "gpio", "spi", "spdm"]
+features = ["lpc55", "gpio", "spi", "spdm", "rot-sprocket"]
 requires = {flash = 16384, ram = 16384 }
 stacksize = 2048
 start = true
-task-slots = ["gpio_driver", "spdm"]
+task-slots = ["gpio_driver", "spdm", "rot_sprocket"]
 
 [tasks.spi_loopback]
 path = "../../task/spi-loopback"
