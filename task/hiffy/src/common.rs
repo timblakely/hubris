@@ -508,13 +508,20 @@ task_slot!(ROT_SPROCKET, rot_sprocket);
 
 #[cfg(feature = "rot-sprocket")]
 pub(crate) fn rot_sprocket_get_endorsements(
-    _stack: &[Option<u32>],
+    stack: &[Option<u32>],
     request: &[u8],
     response: &mut [u8],
 ) -> Result<usize, Failure> {
     use task_rot_sprocket_api as sprocket;
 
+    let frame = &stack[stack.len() - 1..];
+    let length =
+        frame[0].ok_or(Failure::Fault(Fault::BadParameter(0)))? as usize;
+    if length > request.len() {
+        return Err(Failure::Fault(Fault::AccessOutOfBounds));
+    }
+
     let server = sprocket::RotSprocket::from(ROT_SPROCKET.get_task_id());
-    let rlen = func_err(server.get_endorsements(request, response))?;
+    let rlen = func_err(server.get_endorsements(&request[..length], response))?;
     Ok(rlen)
 }

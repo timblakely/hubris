@@ -11,8 +11,7 @@ use ringbuf::*;
 use task_rot_sprocket_api::SprocketsError;
 use userlib::*;
 
-use hubpack::SerializedSize;
-use sprockets::msgs::{RotRequest, RotResponse};
+use sprockets::msgs::{RotRequest, RotResponse, SerializedSize};
 use sprockets::rot::{RotConfig, RotSprocket};
 
 #[derive(Copy, Clone, PartialEq, Debug)]
@@ -21,8 +20,9 @@ enum LogMsg {
     BootstrapConfig,
     CreateSprocket,
     HandledRequest,
+    GetEndorsementsCalled(usize, usize),
 }
-ringbuf!(LogMsg, 16, LogMsg::Init);
+ringbuf!(LogMsg, 4, LogMsg::Init);
 
 #[export_name = "main"]
 fn main() -> ! {
@@ -50,13 +50,16 @@ impl ServerImpl {
 }
 
 impl idl::InOrderRotSprocketImpl for ServerImpl {
-    // An SPDM client sends and receives messages.
     fn get_endorsements(
         &mut self,
         _: &RecvMessage,
         request: Leased<R, [u8]>,
         response: Leased<W, [u8]>,
     ) -> Result<usize, RequestError<SprocketsError>> {
+        ringbuf_entry!(LogMsg::GetEndorsementsCalled(
+            request.len(),
+            response.len()
+        ));
         let mut req = [0u8; RotRequest::MAX_SIZE];
         let mut rsp = [0u8; RotResponse::MAX_SIZE];
 
@@ -73,7 +76,7 @@ impl idl::InOrderRotSprocketImpl for ServerImpl {
         ringbuf_entry!(LogMsg::HandledRequest);
 
         response
-            .write_range(0..pos, &rsp)
+            .write_range(0..pos, &rsp[..pos])
             .map_err(|_| SprocketsError::FailedToWriteResponse)?;
 
         Ok(pos)

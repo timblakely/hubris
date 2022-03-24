@@ -53,7 +53,7 @@ cfg_if::cfg_if! {
     } else if #[cfg(feature = "micro")] {
         const HIFFY_DATA_SIZE: usize = 256;
         const HIFFY_TEXT_SIZE: usize = 256;
-        const HIFFY_RSTACK_SIZE: usize = 64;
+        const HIFFY_RSTACK_SIZE: usize = 512;
     } else {
         const HIFFY_DATA_SIZE: usize = 2_048;
         const HIFFY_TEXT_SIZE: usize = 2048;
@@ -99,7 +99,7 @@ fn main() -> ! {
     let mut sleep_ms = 250;
     let mut sleeps = 0;
     let mut stack = [None; 32];
-    let mut scratch = [0u8; 256];
+    let mut scratch = [0u8; 512];
     const NLABELS: usize = 4;
 
     //

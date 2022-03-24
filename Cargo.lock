@@ -1384,10 +1384,29 @@ dependencies = [
 [[package]]
 name = "hubpack"
 version = "0.1.0"
+source = "git+https://github.com/jgallagher/hubpack.git?rev=36b13ad37a3b9606ea9f7f4d74f4d93ae83f4004#36b13ad37a3b9606ea9f7f4d74f4d93ae83f4004"
+dependencies = [
+ "hubpack_derive 0.1.0 (git+https://github.com/jgallagher/hubpack.git?rev=36b13ad37a3b9606ea9f7f4d74f4d93ae83f4004)",
+ "serde",
+]
+
+[[package]]
+name = "hubpack"
+version = "0.1.0"
 source = "git+https://github.com/cbiffle/hubpack?rev=da22d33ffd754fa837ed16da19194fd0bb63c4e9#da22d33ffd754fa837ed16da19194fd0bb63c4e9"
 dependencies = [
- "hubpack_derive",
+ "hubpack_derive 0.1.0 (git+https://github.com/cbiffle/hubpack?rev=da22d33ffd754fa837ed16da19194fd0bb63c4e9)",
  "serde",
+]
+
+[[package]]
+name = "hubpack_derive"
+version = "0.1.0"
+source = "git+https://github.com/jgallagher/hubpack.git?rev=36b13ad37a3b9606ea9f7f4d74f4d93ae83f4004#36b13ad37a3b9606ea9f7f4d74f4d93ae83f4004"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -2449,7 +2468,7 @@ dependencies = [
  "corncobs",
  "derive_more",
  "ed25519",
- "hubpack",
+ "hubpack 0.1.0 (git+https://github.com/jgallagher/hubpack.git?rev=36b13ad37a3b9606ea9f7f4d74f4d93ae83f4004)",
  "salty",
  "serde",
  "serde-big-array",
@@ -2759,7 +2778,7 @@ dependencies = [
 name = "task-rot-sprocket"
 version = "0.1.0"
 dependencies = [
- "hubpack",
+ "hubpack 0.1.0 (git+https://github.com/cbiffle/hubpack?rev=da22d33ffd754fa837ed16da19194fd0bb63c4e9)",
  "idol",
  "idol-runtime",
  "num-traits",
