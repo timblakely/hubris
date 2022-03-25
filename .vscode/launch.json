@@ -1,0 +1,80 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "cortex-debug",
+      "request": "launch",
+      "name": "BLDC Debug",
+      "servertype": "openocd",
+      "cwd": "${workspaceRoot}",
+      "preLaunchTask": "rust: cargo xtask dist",
+      "interface": "swd",
+      // "runToEntryPoint": "main",
+      // "executable": "./target/thumbv7em-none-eabihf/debug/h7-rs",
+      "executable": "target/demo-stm32h743-nucleo/dist/final.elf",
+      "device": "STM32H723ZG",
+      "configFiles": [
+        "${workspaceRoot}/app/demo-stm32h7-nucleo/openocd.cfg"
+      ],
+      "gdbPath": "/usr/bin/gdb-multiarch",
+      "debuggerArgs": [
+        "-q",
+        "-x",
+        "target/demo-stm32h743-nucleo/dist/script.gdb",
+        "-x",
+        "app/demo-stm32h7-nucleo/openocd.gdb"
+      ],
+      "searchDir": [],
+      "svdFile": "${workspaceRoot}/tools/stm32h723.svd",
+      "openOCDLaunchCommands": [
+        "adapter speed 24000"
+      ],
+    },
+    // Disabled for now since probe-rs doesn't work with stripped binaries.
+    // {
+    //   "type": "probe-rs-debug",
+    //   "request": "launch",
+    //   "name": "BLDC Debug - ProbeRS",
+    //   // "cwd": "${workspaceRoot}",
+    //   // "preLaunchTask": "rust: cargo xtask dist",
+    //   "programBinary": "${workspaceRoot}/target/demo-stm32h743-nucleo/dist/final.elf",
+    //   "chip": "STM32H723ZGTx",
+    //   "connectUnderReset": true,
+    //   "speed": 24000, //!MODIFY (or remove)
+    //   // "probe": "PID:VID:<Serial>", //!MODIFY (or remove)
+    //   // "probe": "0483:374e:0047002A3438510934313939",
+    //   // "probe": "0483:374e",
+    //   // "probe": "0483:374E",
+    //   "runtimeExecutable": "probe-rs-debugger",
+    //   "runtimeArgs": [
+    //     "debug"
+    //   ],
+    //   "coreIndex": 0,
+    //   "flashingEnabled": true,
+    //   "resetAfterFlashing": true,
+    //   "haltAfterReset": true,
+    //   "consoleLogLevel": "Info", //Error, Warn, Info, Debug, Trace
+    // },
+    // {
+    //   "type": "probe-rs-debug",
+    //   "request": "attach",
+    //   "name": "BLDC Debug - ProbeRS - attach",
+    //   "cwd": "${workspaceRoot}",
+    //   // "preLaunchTask": "rust: cargo xtask dist",
+    //   "programBinary": "target/demo-stm32h743-nucleo/dist/user_leds",
+    //   "chip": "STM32H723ZGTx",
+    //   "connectUnderReset": true,
+    //   "speed": 24000, //!MODIFY (or remove)
+    //   // "probe": "PID:VID:<Serial>", //!MODIFY (or remove)
+    //   // "probe": "0483:374e:0047002A3438510934313939",
+    //   // "probe": "0483:374e",
+    //   // "probe": "0483:374E",
+    //   "server": "127.0.0.1:50000",
+    //   "coreIndex": 0,
+    //   "consoleLogLevel": "Info", //Error, Warn, Info, Debug, Trace
+    // },
+  ]
+}
