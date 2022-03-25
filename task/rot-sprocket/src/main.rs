@@ -21,6 +21,8 @@ enum LogMsg {
     CreateSprocket,
     HandledRequest,
     GetEndorsementsCalled(usize, usize),
+    AddHostMeasurementsCalled(usize, usize),
+    GetMeasurementsCalled(usize, usize),
 }
 ringbuf!(LogMsg, 4, LogMsg::Init);
 
@@ -47,19 +49,12 @@ impl ServerImpl {
         ringbuf_entry!(LogMsg::CreateSprocket);
         ServerImpl { sprocket }
     }
-}
 
-impl idl::InOrderRotSprocketImpl for ServerImpl {
-    fn get_endorsements(
+    fn handle_request(
         &mut self,
-        _: &RecvMessage,
         request: Leased<R, [u8]>,
         response: Leased<W, [u8]>,
     ) -> Result<usize, RequestError<SprocketsError>> {
-        ringbuf_entry!(LogMsg::GetEndorsementsCalled(
-            request.len(),
-            response.len()
-        ));
         let mut req = [0u8; RotRequest::MAX_SIZE];
         let mut rsp = [0u8; RotResponse::MAX_SIZE];
 
@@ -80,6 +75,47 @@ impl idl::InOrderRotSprocketImpl for ServerImpl {
             .map_err(|_| SprocketsError::FailedToWriteResponse)?;
 
         Ok(pos)
+    }
+}
+
+impl idl::InOrderRotSprocketImpl for ServerImpl {
+    fn get_endorsements(
+        &mut self,
+        _: &RecvMessage,
+        request: Leased<R, [u8]>,
+        response: Leased<W, [u8]>,
+    ) -> Result<usize, RequestError<SprocketsError>> {
+        ringbuf_entry!(LogMsg::GetEndorsementsCalled(
+            request.len(),
+            response.len()
+        ));
+        self.handle_request(request, response)
+    }
+
+    fn add_host_measurements(
+        &mut self,
+        _: &RecvMessage,
+        request: Leased<R, [u8]>,
+        response: Leased<W, [u8]>,
+    ) -> Result<usize, RequestError<SprocketsError>> {
+        ringbuf_entry!(LogMsg::AddHostMeasurementsCalled(
+            request.len(),
+            response.len()
+        ));
+        self.handle_request(request, response)
+    }
+
+    fn get_measurements(
+        &mut self,
+        _: &RecvMessage,
+        request: Leased<R, [u8]>,
+        response: Leased<W, [u8]>,
+    ) -> Result<usize, RequestError<SprocketsError>> {
+        ringbuf_entry!(LogMsg::GetMeasurementsCalled(
+            request.len(),
+            response.len()
+        ));
+        self.handle_request(request, response)
     }
 }
 

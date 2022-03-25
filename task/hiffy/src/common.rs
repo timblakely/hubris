@@ -503,8 +503,11 @@ pub(crate) fn spdm_exchange(
     Ok(rlen)
 }
 
-#[cfg(feature = "spdm")]
+#[cfg(feature = "rot-sprocket")]
 task_slot!(ROT_SPROCKET, rot_sprocket);
+
+#[cfg(feature = "rot-sprocket")]
+use task_rot_sprocket_api as sprocket;
 
 #[cfg(feature = "rot-sprocket")]
 pub(crate) fn rot_sprocket_get_endorsements(
@@ -512,16 +515,50 @@ pub(crate) fn rot_sprocket_get_endorsements(
     request: &[u8],
     response: &mut [u8],
 ) -> Result<usize, Failure> {
-    use task_rot_sprocket_api as sprocket;
+    let (length, server) = rot_sprocket_init(stack, request.len())?;
 
+    let rlen = func_err(server.get_endorsements(&request[..length], response))?;
+    Ok(rlen)
+}
+
+#[cfg(feature = "rot-sprocket")]
+pub(crate) fn rot_sprocket_add_host_measurements(
+    stack: &[Option<u32>],
+    request: &[u8],
+    response: &mut [u8],
+) -> Result<usize, Failure> {
+    let (length, server) = rot_sprocket_init(stack, request.len())?;
+
+    let rlen =
+        func_err(server.add_host_measurements(&request[..length], response))?;
+    Ok(rlen)
+}
+
+#[cfg(feature = "rot-sprocket")]
+pub(crate) fn rot_sprocket_get_measurements(
+    stack: &[Option<u32>],
+    request: &[u8],
+    response: &mut [u8],
+) -> Result<usize, Failure> {
+    let (length, server) = rot_sprocket_init(stack, request.len())?;
+
+    let rlen = func_err(server.get_measurements(&request[..length], response))?;
+    Ok(rlen)
+}
+
+#[cfg(feature = "rot-sprocket")]
+fn rot_sprocket_init(
+    stack: &[Option<u32>],
+    max_len: usize,
+) -> Result<(usize, sprocket::RotSprocket), Failure> {
     let frame = &stack[stack.len() - 1..];
     let length =
         frame[0].ok_or(Failure::Fault(Fault::BadParameter(0)))? as usize;
-    if length > request.len() {
+    if length > max_len {
         return Err(Failure::Fault(Fault::AccessOutOfBounds));
     }
 
     let server = sprocket::RotSprocket::from(ROT_SPROCKET.get_task_id());
-    let rlen = func_err(server.get_endorsements(&request[..length], response))?;
-    Ok(rlen)
+
+    Ok((length, server))
 }

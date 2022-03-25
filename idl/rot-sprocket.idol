@@ -15,29 +15,29 @@ Interface(
                err: CLike("SprocketsError"),
            ),
         ),
-////        "add_host_measurements": (
-//           doc: "Record host measurements at the RoT.",
-//           args: {},
-//           leases: {
-//               "request": (type: "[u8]", read: true),
-//               "response": (type: "[u8]", write: true),
-//           },
-//           reply: Result(
-//              ok: "usize",
-//              err: CLike("SprocketsError"),
-//          ),
-//       ),
-////        "get_measurements": (
-//           doc: "Retreive all measurements from RoT.",
-//           args: {},
-//           leases: {
-//               "request": (type: "[u8]", read: true),
-//               "response": (type: "[u8]", write: true),
-//           },
-//           reply: Result(
-//              ok: "()",
-//              err: CLike("SprocketsError"),
-//          ),
-//       )
+        "add_host_measurements": (
+         doc: "Record host measurements at the RoT.",
+           args: {},
+           leases: {
+               "request": (type: "[u8]", read: true),
+               "response": (type: "[u8]", write: true),
+           },
+           reply: Result(
+              ok: "usize",
+              err: CLike("SprocketsError"),
+          ),
+       ),
+       "get_measurements": (
+          doc: "Retreive all measurements from RoT.",
+          args: {},
+          leases: {
+            "request": (type: "[u8]", read: true),
+            "response": (type: "[u8]", write: true),
+          },
+          reply: Result(
+             ok: "usize",
+             err: CLike("SprocketsError"),
+         ),
+       )
    },
 )

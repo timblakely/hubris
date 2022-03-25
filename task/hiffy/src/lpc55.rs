@@ -67,6 +67,13 @@ pub enum Functions {
     SpdmExchange(usize, task_spdm_api::SpdmError),
     #[cfg(feature = "rot-sprocket")]
     RotSprocketGetEndorsements(usize, task_rot_sprocket_api::SprocketsError),
+    #[cfg(feature = "rot-sprocket")]
+    RotSprocketAddHostMeasurements(
+        usize,
+        task_rot_sprocket_api::SprocketsError,
+    ),
+    #[cfg(feature = "rot-sprocket")]
+    RotSprocketGetMeasurements(usize, task_rot_sprocket_api::SprocketsError),
 }
 
 #[cfg(feature = "gpio")]
