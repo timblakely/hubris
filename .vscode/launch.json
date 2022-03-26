@@ -28,7 +28,7 @@
         "app/demo-stm32h7-nucleo/openocd.gdb"
       ],
       "searchDir": [],
-      "svdFile": "${workspaceRoot}/tools/stm32h723.svd",
+      "svdFile": "/home/tim/git/h7-rs/tools/stm32h723.svd",
       "openOCDLaunchCommands": [
         "adapter speed 24000"
       ],
