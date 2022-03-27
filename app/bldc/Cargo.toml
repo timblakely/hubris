@@ -10,7 +10,7 @@ semihosting = ["panic-semihosting", "kern/klog-semihosting"]
 # Yes, this is intentionally pointing at the h735. The stm32h7 crate lumps the
 # STM32H723, STM32H725, STM32H730, STM32H733, and STM32H735 all into the
 # stm32h735 flag.
-h723 = ["stm32h7/stm32h735", "drv-stm32h7-startup/h723"]
+h735 = ["stm32h7/stm32h735", "drv-stm32h7-startup/h735"]
 
 [dependencies]
 cortex-m = { version = "0.7", features = ["inline-asm"] }
