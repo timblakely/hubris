@@ -18,6 +18,7 @@ cfg_if::cfg_if! {
     }
 }
 
+use derive_idol_err::IdolError;
 use unwrap_lite::UnwrapLite;
 use userlib::*;
 
@@ -25,26 +26,10 @@ pub use drv_stm32xx_gpio_common::{
     Alternate, Mode, OutputType, PinSet, Port, Pull, Speed,
 };
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, FromPrimitive, IdolError)]
 #[repr(u32)]
 pub enum RccError {
     NoSuchPeripheral = 1,
-}
-
-impl TryFrom<u32> for RccError {
-    type Error = ();
-    fn try_from(x: u32) -> Result<Self, Self::Error> {
-        match x {
-            1 => Ok(RccError::NoSuchPeripheral),
-            _ => Err(()),
-        }
-    }
-}
-
-impl From<RccError> for u16 {
-    fn from(x: RccError) -> Self {
-        x as u16
-    }
 }
 
 impl Sys {
@@ -138,41 +123,18 @@ impl Peripheral {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, FromPrimitive, IdolError)]
 #[repr(u32)]
 pub enum GpioError {
     BadArg = 2,
-}
-
-impl From<GpioError> for u32 {
-    fn from(rc: GpioError) -> Self {
-        rc as u32
-    }
-}
-
-impl From<GpioError> for u16 {
-    fn from(rc: GpioError) -> Self {
-        rc as u16
-    }
-}
-
-impl TryFrom<u32> for GpioError {
-    type Error = ();
-
-    fn try_from(x: u32) -> Result<Self, Self::Error> {
-        match x {
-            2 => Ok(GpioError::BadArg),
-            _ => Err(()),
-        }
-    }
 }
 
 impl Sys {
     /// Configures a subset of pins in a GPIO port.
     ///
     /// This is the raw operation, which can be useful if you're doing something
-    /// unusual, but see `configure_output`, `configure_input`, and
-    /// `configure_alternate` for the common cases.
+    /// unusual, but see `gpio_configure_output`, `gpio_configure_input`, and
+    /// `gpio_configure_alternate` for the common cases.
     pub fn gpio_configure(
         &self,
         port: Port,

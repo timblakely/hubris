@@ -6,20 +6,12 @@
 
 #![no_std]
 
+use derive_idol_err::IdolError;
 use userlib::*;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, FromPrimitive, IdolError)]
 pub enum LedError {
     NotPresent = 1,
-}
-
-impl From<u32> for LedError {
-    fn from(x: u32) -> Self {
-        match x {
-            1 => LedError::NotPresent,
-            _ => panic!(),
-        }
-    }
 }
 
 include!(concat!(env!("OUT_DIR"), "/client_stub.rs"));
