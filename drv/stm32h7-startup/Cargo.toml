@@ -4,10 +4,14 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
-stm32h7 = { version = "0.13.0", default-features = false, features = ["rt"] }
+stm32h7 = { version = "0.14.0", default-features = false, features = ["rt"] }
 cortex-m = {version = "0.7", features = ["inline-asm"]}
 cortex-m-rt = "0.6.12"
 
 [features]
+# TODO: Declaring the H723 by itself doesn't quite vibe with the stm32h7 crate's
+# assumption that the h735 feature enables all of STM32H723, STM32H725,
+# STM32H730, STM32H733, STM32H735.
+h723 = ["stm32h7/stm32h735"]
 h743 = ["stm32h7/stm32h743"]
 h753 = ["stm32h7/stm32h753"]

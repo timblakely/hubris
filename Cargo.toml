@@ -20,6 +20,7 @@ members = [
     "lib/ringbuf",
     "lib/unwrap-lite",
 
+    "app/bldc",
     "app/demo-stm32f4-discovery",
     "app/demo-stm32g0-nucleo",
     "app/demo-stm32h7-nucleo",

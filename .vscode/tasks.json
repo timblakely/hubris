@@ -8,14 +8,11 @@
 				"$rustc"
 			],
 			"label": "rust: cargo xtask dist",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
+			"group": "build",
 			"args": [
 				"dist",
-				"app/demo-stm32h7-nucleo/app-h743.toml",
-			],
+				"app/demo-stm32h7-nucleo/app-h743.toml"
+			]
 		},
 		{
 			"type": "cargo",
@@ -25,12 +22,28 @@
 			],
 			"label": "rust: cargo xtask build ",
 			"group": {
-				"kind": "build",
+				"kind": "build"
 			},
 			"args": [
 				"dist",
-				"app/demo-stm32h7-nucleo/app-h743.toml",
+				"app/demo-stm32h7-nucleo/app-h743.toml"
+			]
+		},
+		{
+			"type": "cargo",
+			"command": "xtask",
+			"problemMatcher": [
+				"$rustc"
 			],
+			"label": "xtask dist bldc",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"args": [
+				"dist",
+				"app/bldc/app.toml"
+			]
 		}
 	]
 }

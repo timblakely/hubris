@@ -1,0 +1,64 @@
+name = "bldc"
+target = "thumbv7em-none-eabihf"
+board = "nucleo-h723zg"
+chip = "../../chips/stm32h723.toml"
+stacksize = 896
+
+[kernel]
+path = "."
+name = "bldc"
+requires = {flash = 21452, ram = 4096}
+#
+# For the kernel (and for any task that logs), we are required to enable
+# either "itm" (denoting logging/panicking via ARM's Instrumentation Trace
+# Macrocell) or "semihosting" (denoting logging/panicking via ARM
+# semihosting).  We are biased to ITM because semihosting is excruciatingly
+# slow (it is breakpoint based) and has an undesirable failure mode if logging
+# output is generated and debugger is not attached (namely, the target stops).
+# If one does choose to change this to semihosting for purposes of
+# development, be sure to also change it in every task of interest.
+#
+features = ["h723", "itm"]
+
+# TODO(blakely): Figure out what the notification is for the supervisor.
+[supervisor]
+notification = 1
+
+# H723 only has a single 1MB flash bank.
+[outputs.flash]
+address = 0x08000000
+size = 1048576
+read = true
+execute = true
+
+# RAM reference: RM0468, Fig 1
+
+# This assumes that the shared 192KB between ITCM and AXI SRAM is assigned to
+# ITCM, giving a total of 64 + 192 = 256K. This is basically general-use RAM,
+# with a bus width of 64 bit. If we need more random access, we can prefer the
+# DTCM which is 2x32 bit.
+[outputs.itcm]
+address = 0x00000000
+size = 262144
+read = true
+write = true
+execute = false  # let's assume XN until proven otherwise
+
+# DTCM RAM is 2x32 bit. This area is good for random access data, as it's
+# coupled to the core clock, _not_ the HCLK [citation needed]. Small, but fast.
+[outputs.dtcm]
+address = 0x20000000
+size = 131072
+read = true
+write = true
+execute = false  # let's assume XN until proven otherwise
+
+# The supervisor task
+[tasks.jefe]
+path = "../../task/jefe"
+name = "task-jefe"
+priority = 0
+requires = {flash = 8192, ram = 2048}
+start = true
+features = ["itm"]
+stacksize = 1536

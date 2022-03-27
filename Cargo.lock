@@ -140,6 +140,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "bldc"
+version = "0.1.0"
+dependencies = [
+ "build-util",
+ "cfg-if 0.1.10",
+ "cortex-m",
+ "cortex-m-rt",
+ "drv-stm32h7-startup",
+ "kern",
+ "panic-halt",
+ "panic-itm",
+ "panic-semihosting",
+ "stm32h7 0.14.0",
+]
+
+[[package]]
 name = "block-buffer"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1009,7 +1025,7 @@ version = "0.1.0"
 dependencies = [
  "cortex-m",
  "cortex-m-rt",
- "stm32h7 0.13.0",
+ "stm32h7 0.14.0",
 ]
 
 [[package]]
@@ -2506,6 +2522,7 @@ checksum = "6f0faa648e03579befdd7267ab5c669624729028001fcf3c973832f53e310a06"
 dependencies = [
  "bare-metal 1.0.0",
  "cortex-m",
+ "cortex-m-rt",
  "vcell",
 ]
 
