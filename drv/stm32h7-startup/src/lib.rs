@@ -6,13 +6,16 @@
 
 use cortex_m_rt::pre_init;
 
+#[cfg(feature = "h735")]
+use stm32h7::stm32h735 as device;
+
 #[cfg(feature = "h743")]
 use stm32h7::stm32h743 as device;
 
 #[cfg(feature = "h753")]
 use stm32h7::stm32h753 as device;
 
-#[cfg(any(feature = "h743", feature = "h753"))]
+#[cfg(any(feature = "h743", feature = "h753", feature = "h735"))]
 #[pre_init]
 unsafe fn system_pre_init() {
     // Configure the power supply to latch the LDO on and prevent further
@@ -41,14 +44,8 @@ unsafe fn system_pre_init() {
 
     // Turn on the internal RAMs.
     let rcc = &*device::RCC::ptr();
-    rcc.ahb2enr.modify(|_, w| {
-        w.sram1en()
-            .set_bit()
-            .sram2en()
-            .set_bit()
-            .sram3en()
-            .set_bit()
-    });
+    rcc.ahb2enr
+        .modify(|_, w| w.sram1en().set_bit().sram2en().set_bit());
 
     // Okay, yay, we can use some RAMs now.
 
@@ -117,11 +114,11 @@ pub fn system_init(config: ClockConfig) -> device::Peripherals {
             .set_bit()
             .d1dbgcken()
             .set_bit()
-            .dbgstby_d1()
+            .dbgstbd1()
             .set_bit()
-            .dbgstop_d1()
+            .dbgstpd1()
             .set_bit()
-            .dbgsleep_d1()
+            .dbgslpd1()
             .set_bit()
     });
 
