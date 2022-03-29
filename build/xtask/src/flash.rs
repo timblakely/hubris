@@ -161,10 +161,11 @@ pub fn config(board: &str) -> anyhow::Result<FlashConfig> {
 
             Ok(flash)
         }
-        "stm32f3-discovery" | "stm32f4-discovery" | "nucleo-h743zi2"
-        | "nucleo-h753zi" | "stm32h7b3i-dk" | "gemini-bu-1" | "gimletlet-1"
-        | "gimletlet-2" | "gimlet-a" | "gimlet-b" | "psc-1" | "sidecar-1"
-        | "stm32g031" | "stm32g070" | "stm32g0b1" => {
+        "stm32f3-discovery" | "stm32f4-discovery" | "nucleo-h723zg"
+        | "nucleo-h743zi2" | "nucleo-h753zi" | "stm32h7b3i-dk"
+        | "gemini-bu-1" | "gimletlet-1" | "gimletlet-2" | "gimlet-a"
+        | "gimlet-b" | "psc-1" | "sidecar-1" | "stm32g031" | "stm32g070"
+        | "stm32g0b1" => {
             let (dir, file) = if board == "stm32f3-discovery" {
                 ("demo-stm32f4-discovery", "openocd-f3.cfg")
             } else if board == "stm32f4-discovery" {
@@ -209,6 +210,7 @@ fn chip_name(board: &str) -> anyhow::Result<&'static str> {
         "gemini-bu-rot-1" | "gimlet-rot-1" => "LPC55S69JBD100",
         "stm32f3-discovery" => "STM32F303VCTx",
         "stm32f4-discovery" => "STM32F407VGTx",
+        "nucleo-h723zg" => "STM32H723ZGTx",
         "nucleo-h743zi2" => "STM32H743ZITx",
         "nucleo-h753zi" => "STM32H753ZITx",
         "stm32h7b3i-dk" => "STM32H7B3IITx",
