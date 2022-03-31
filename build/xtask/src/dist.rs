@@ -242,6 +242,7 @@ pub fn package(
             out.join(&bootloader.name),
             verbose,
             edges,
+            None,
             &task_names,
             &remap_paths,
             &None,
@@ -366,6 +367,7 @@ Did you mean to run `cargo xtask dist`?"
             out.join(name),
             verbose,
             edges,
+            Some(&name),
             &task_names,
             &remap_paths,
             &toml.secure_separation,
@@ -446,6 +448,7 @@ Did you mean to run `cargo xtask dist`?"
         out.join("kernel"),
         verbose,
         edges,
+        None,
         "",
         &remap_paths,
         &toml.secure_separation,
@@ -1063,6 +1066,7 @@ fn build(
     dest: PathBuf,
     verbose: bool,
     edges: bool,
+    current_task_name: Option<&str>,
     task_names: &str,
     remap_paths: &BTreeMap<PathBuf, &str>,
     secure_separation: &Option<bool>,
@@ -1168,6 +1172,12 @@ fn build(
     if let Some(app_config) = app_config {
         let env = toml::to_string(&app_config).unwrap();
         cmd.env("HUBRIS_APP_CONFIG", env);
+    }
+
+    // Expose the current task's name to allow for better error messages if
+    // a required configuration section is missing
+    if let Some(current_task_name) = current_task_name {
+        cmd.env("HUBRIS_TASK_NAME", current_task_name);
     }
 
     if edges {
