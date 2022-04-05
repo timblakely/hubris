@@ -835,6 +835,9 @@ name = "drv-lpc55-syscon"
 version = "0.1.0"
 dependencies = [
  "cortex-m",
+ "drv-lpc55-syscon-api",
+ "idol",
+ "idol-runtime",
  "lpc55-pac",
  "num-traits 0.2.14",
  "userlib",
@@ -845,6 +848,9 @@ dependencies = [
 name = "drv-lpc55-syscon-api"
 version = "0.1.0"
 dependencies = [
+ "build-util",
+ "derive-idol-err",
+ "idol",
  "num-traits 0.2.14",
  "userlib",
  "zerocopy",
