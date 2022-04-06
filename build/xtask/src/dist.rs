@@ -234,6 +234,7 @@ pub fn package(
 
         build(
             &paths,
+            cfg,
             &toml.target,
             &toml.board,
             &src_dir.join(&bootloader.path),
@@ -359,6 +360,7 @@ Did you mean to run `cargo xtask dist`?"
 
         build(
             &paths,
+            cfg,
             &toml.target,
             &toml.board,
             &src_dir.join(&task_toml.path),
@@ -440,6 +442,7 @@ Did you mean to run `cargo xtask dist`?"
     // Build the kernel.
     build(
         &paths,
+        cfg,
         &toml.target,
         &toml.board,
         &src_dir.join(&toml.kernel.path),
@@ -1058,6 +1061,7 @@ fn generate_kernel_linker_script(
 
 fn build(
     paths: &paths::XTaskPaths,
+    app_toml_path: &Path,
     target: &str,
     board_name: &str,
     path: &Path,
@@ -1131,8 +1135,18 @@ fn build(
         ),
     );
 
+    // We include the path to the configuration TOML file so that proc macros
+    // that use it can easily force a rebuild (using include_bytes!)
+    //
+    // This doesn't matter now, because we rebuild _everything_ on app.toml
+    // changes, but once #240 is closed, this will be important.
+    let app_toml_path = app_toml_path
+        .canonicalize()
+        .expect("Could not canonicalize path to app TOML file");
+
     cmd.env("HUBRIS_TASKS", task_names);
     cmd.env("HUBRIS_BOARD", board_name);
+    cmd.env("HUBRIS_APP_TOML", app_toml_path);
 
     for (var, value) in extra_env {
         cmd.env(var, value);
