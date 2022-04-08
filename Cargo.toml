@@ -21,7 +21,6 @@ members = [
     "lib/ringbuf",
     "lib/unwrap-lite",
 
-    "app/bldc",
     "app/demo-stm32f4-discovery",
     "app/demo-stm32g0-nucleo",
     "app/demo-stm32h7-nucleo",
@@ -112,6 +111,10 @@ members = [
     "test/test-idol-api",
 
     "stage0",
+
+    "app/bldc",
+    "drv/bldc/clock-inspect",
+    # "drv/bldc/clock-inspect-api",
 ]
 default-members = []
 resolver = "2"

@@ -1,7 +1,7 @@
 name = "bldc"
 target = "thumbv7em-none-eabihf"
 board = "nucleo-h723zg"
-chip = "../../chips/stm32h723.toml"
+chip = "../../chips/stm32h735.toml"
 stacksize = 896
 
 [kernel]
@@ -59,6 +59,14 @@ read = true
 write = true
 execute = false  # let's assume XN until proven otherwise
 
+# As far as priorities go, the smaller the number the higher the priority. For BLDC we use the
+# following:
+#
+#  0 - Jefe
+#  1 - sys and commutation
+#  2 - clocok-inspect (temporary)
+#  5 - Idle
+
 # The supervisor task
 [tasks.jefe]
 path = "../../task/jefe"
@@ -76,3 +84,21 @@ priority = 5
 requires = {flash = 128, ram = 256}
 stacksize = 256
 start = true
+
+[tasks.sys]
+path = "../../drv/stm32xx-sys"
+name = "drv-stm32xx-sys"
+features = ["h735"]
+priority = 1
+requires = {flash = 2048, ram = 1024}
+uses = ["rcc", "gpios1", "gpios3"]
+start = true
+
+[tasks.clock_inspect]
+path = "../../drv/bldc/clock-inspect"
+name = "drv-clock-inspect"
+features = ["stm32h7"]
+priority = 2
+requires = {flash = 2048, ram = 1024}
+start = true
+task-slots = ["sys"]
