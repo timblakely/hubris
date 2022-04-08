@@ -41,8 +41,6 @@
       "cwd": "${workspaceRoot}",
       "preLaunchTask": "xtask dist bldc",
       "interface": "swd",
-      // "runToEntryPoint": "main",
-      // "executable": "./target/thumbv7em-none-eabihf/debug/h7-rs",
       "executable": "target/bldc/dist/final.elf",
       "device": "STM32H723ZG",
       "configFiles": [

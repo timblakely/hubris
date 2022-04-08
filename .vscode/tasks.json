@@ -44,6 +44,20 @@
 				"dist",
 				"app/bldc/app.toml"
 			]
+		},
+		{
+			"type": "cargo",
+			"command": "xtask",
+			"problemMatcher": [
+				"$rustc"
+			],
+			"label": "xtask build clock-inspect",
+			"group": "build",
+			"args": [
+				"build",
+				"app/bldc/app.toml",
+				"clock_inspect"
+			]
 		}
 	]
 }

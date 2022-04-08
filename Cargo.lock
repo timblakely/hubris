@@ -624,6 +624,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "drv-clock-inspect"
+version = "0.1.0"
+dependencies = [
+ "build-util",
+ "cfg-if 0.1.10",
+ "drv-clock-inspect-api",
+ "drv-stm32xx-sys-api",
+ "idol",
+ "idol-runtime",
+ "userlib",
+]
+
+[[package]]
+name = "drv-clock-inspect-api"
+version = "0.1.0"
+dependencies = [
+ "derive-idol-err",
+ "idol",
+ "num-traits",
+ "userlib",
+ "zerocopy",
+]
+
+[[package]]
 name = "drv-gimlet-hf-api"
 version = "0.1.0"
 dependencies = [
