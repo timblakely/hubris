@@ -633,7 +633,9 @@ dependencies = [
  "drv-stm32xx-sys-api",
  "idol",
  "idol-runtime",
+ "num-traits",
  "userlib",
+ "zerocopy",
 ]
 
 [[package]]
