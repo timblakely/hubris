@@ -22,6 +22,8 @@ cfg_if::cfg_if! {
     } else if #[cfg(feature = "family-stm32h7")] {
         use stm32h7 as pac;
 
+        #[cfg(feature = "h735")]
+        use stm32h7::stm32h735 as device;
         #[cfg(feature = "h743")]
         use stm32h7::stm32h743 as device;
         #[cfg(feature = "h753")]
@@ -114,13 +116,22 @@ fn main() -> ! {
                     .set_bit()
                     .gpiohen()
                     .set_bit()
-                    .gpioien()
-                    .set_bit()
                     .gpiojen()
                     .set_bit()
                     .gpioken()
                     .set_bit()
             });
+            // The stm32h72x and 3x series inexplicably don't have a GPIOI port. Avoid setting it,
+            // since there have been [previous instances of
+            // weirdness](../../../app/demo-stm32h7-nucleo/openocd.cfg) when setting reserved bits
+            // in the H7 series...
+            if #[cfg(not(feature = "stm32h735"))] {
+                rcc.ahb4enr.write(|w| {
+                    w.gpioaen()
+                        .gpiogen()
+                        .set_bit()
+                });
+            }
         }
     }
 
