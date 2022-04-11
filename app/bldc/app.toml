@@ -102,3 +102,14 @@ priority = 2
 requires = {flash = 2048, ram = 1024}
 start = true
 task-slots = ["sys"]
+
+[tasks.hiffy]
+path = "../../task/hiffy"
+name = "task-hiffy"
+# features = ["h735", "stm32h7", "itm", "i2c", "gpio", "spi"]
+features = ["h735", "stm32h7", "itm", "gpio"]
+priority = 3
+requires = {flash = 32768, ram = 32768 }
+stacksize = 2048
+start = true
+task-slots = ["sys", "i2c_driver"]
