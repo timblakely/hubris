@@ -121,16 +121,17 @@ fn main() -> ! {
                     .gpioken()
                     .set_bit()
             });
-            // The stm32h72x and 3x series inexplicably don't have a GPIOI port. Avoid setting it,
-            // since there have been [previous instances of
+            // The stm32h72x and 3x series inexplicably have no GPIOI port. Avoid setting it, since
+            // there have been [previous instances of
             // weirdness](../../../app/demo-stm32h7-nucleo/openocd.cfg) when setting reserved bits
-            // in the H7 series...
-            if #[cfg(not(feature = "stm32h735"))] {
-                rcc.ahb4enr.write(|w| {
-                    w.gpioaen()
-                        .gpiogen()
+            // in the H7 series.
+            cfg_if::cfg_if! {
+                if #[cfg(not(feature = "stm32h735"))] {
+                    rcc.ahb4enr.write(|w| {
+                        w.gpioien()
                         .set_bit()
-                });
+                    });
+                }
             }
         }
     }
