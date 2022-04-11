@@ -184,6 +184,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "build-lpc55pins"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "build-util",
+ "cfg-if 0.1.10",
+ "convert_case 0.4.0",
+ "indexmap",
+ "multimap",
+ "proc-macro2",
+ "quote",
+ "serde",
+ "syn",
+]
+
+[[package]]
 name = "build-net"
 version = "0.1.0"
 dependencies = [
@@ -820,12 +836,15 @@ dependencies = [
 name = "drv-lpc55-spi-server"
 version = "0.1.0"
 dependencies = [
+ "build-lpc55pins",
+ "build-util",
  "drv-lpc55-gpio-api",
  "drv-lpc55-spi",
  "drv-lpc55-syscon-api",
  "lpc55-pac",
  "num-traits 0.2.14",
  "ringbuf",
+ "serde",
  "userlib",
  "zerocopy",
 ]
@@ -860,9 +879,13 @@ dependencies = [
 name = "drv-lpc55-usart"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
+ "build-lpc55pins",
+ "build-util",
  "drv-lpc55-gpio-api",
  "drv-lpc55-syscon-api",
  "lpc55-pac",
+ "serde",
  "userlib",
  "zerocopy",
 ]
