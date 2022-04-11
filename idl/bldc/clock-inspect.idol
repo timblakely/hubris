@@ -8,7 +8,7 @@ Interface(
                 "enable": "bool",
             },
             reply: Result(
-                ok: "()",
+                ok: "u8",
                 err: CLike("ClockError"),
             ),
         ),
