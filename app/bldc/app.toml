@@ -97,11 +97,12 @@ start = true
 [tasks.clock_inspect]
 path = "../../drv/bldc/clock-inspect"
 name = "drv-clock-inspect"
-features = ["stm32h7"]
+features = ["stm32h7", "h735"]
 priority = 2
 requires = {flash = 2048, ram = 1024}
 start = true
 task-slots = ["sys"]
+uses = ["rcc"]
 
 [tasks.hiffy]
 path = "../../task/hiffy"

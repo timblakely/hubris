@@ -634,6 +634,7 @@ dependencies = [
  "idol",
  "idol-runtime",
  "num-traits",
+ "stm32h7",
  "userlib",
  "zerocopy",
 ]
