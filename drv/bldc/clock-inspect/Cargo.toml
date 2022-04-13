@@ -21,6 +21,7 @@ build-util = {path = "../../../build/util"}
 idol = {git = "https://github.com/oxidecomputer/idolatry.git"}
 
 [features]
+default = ["h735"]
 h735 = ["stm32h7/stm32h735", "drv-stm32xx-sys-api/h735", "stm32h7/stm32h735"]
 panic-messages = ["userlib/panic-messages"]
 

@@ -1,0 +1,5 @@
+{
+  "rust-analyzer.server.extraEnv": {
+    "HUBRIS_TASKS": "jefe,idle,sys,clock_inspect,hiffy"
+  }
+}

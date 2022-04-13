@@ -22,6 +22,7 @@ mod humility;
 mod sizes;
 mod task_slot;
 mod test;
+mod vscode;
 
 #[derive(Debug, Parser)]
 #[clap(max_term_width = 80, about = "extra tasks to help you work on Hubris")]
@@ -130,6 +131,14 @@ enum Xtask {
     TaskSlots {
         /// Path to task executable
         task_bin: PathBuf,
+    },
+
+    /// Updates vscode's settings.json file to allow it to play nice with the build system. Intended
+    /// to be used when developing against a single app.toml file. Needs to / be re-run after every
+    /// app.toml change.
+    VSCode {
+        /// Path to the image configuration file, in TOML.
+        cfg: PathBuf,
     },
 }
 
@@ -499,6 +508,9 @@ fn main() -> Result<()> {
         }
         Xtask::TaskSlots { task_bin } => {
             task_slot::dump_task_slot_table(&task_bin)?;
+        }
+        Xtask::VSCode { cfg } => {
+            vscode::hi(&cfg)?;
         }
     }
 
