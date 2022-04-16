@@ -95,7 +95,7 @@ uses = ["rcc", "gpios1", "gpios3"]
 start = true
 
 [tasks.clock_inspect]
-path = "../../drv/bldc/clock-inspect"
+path = "../drv/clock-inspect"
 name = "drv-clock-inspect"
 features = ["stm32h7", "h735"]
 priority = 2

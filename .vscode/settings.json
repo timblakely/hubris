@@ -1,0 +1,6 @@
+{
+  "rust-analyzer.server.extraEnv": {
+    "HUBRIS_TASKS": "jefe,idle,sys,clock_inspect,hiffy"
+  },
+  "rust-analyzer.cargo.target": "thumbv7em-none-eabihf"
+}
