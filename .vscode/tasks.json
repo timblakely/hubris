@@ -36,7 +36,10 @@
 				"$rustc"
 			],
 			"label": "xtask dist bldc",
-			"group": "build",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
 			"args": [
 				"dist",
 				"bldc/app/app.toml"
@@ -49,10 +52,7 @@
 				"$rustc"
 			],
 			"label": "xtask build clock-inspect",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
+			"group": "build",
 			"args": [
 				"build",
 				"bldc/app/app.toml",

@@ -1,7 +1,7 @@
 name = "bldc"
 target = "thumbv7em-none-eabihf"
 board = "nucleo-h723zg"
-chip = "../../chips/stm32h735.toml"
+chip = "../../chips/stm32h73x.toml"
 stacksize = 896
 
 [kernel]

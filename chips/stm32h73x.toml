@@ -1,3 +1,8 @@
+# This chip definition covers both the STM32H72x and STM32H73x series chips.
+# They are nearly identical to the rest of the h7 series in terms of memory
+# locations, but inexplicably don't have GPIOI and instead have a gap in the
+# AHB4 range from 0x58021FFF and 0x58022400 (see RM0468 Table 7).
+
 [rcc]
 address = 0x58024400
 size = 1024
@@ -6,7 +11,7 @@ size = 1024
 address = 0x58020000
 size = 0x2000
 
-# Note: Does not exist for some reason on the STM32H723...?
+# Note: Does not exist for some reason on the STM32H72x and STM32H73x...?
 # [gpios2]
 # address = 0x58022000
 # size = 0x0800
@@ -89,10 +94,10 @@ address = 0x48021400
 size = 4096
 interrupts = { irq = 80 }
 
-#[rng]
-#address = 0x48021800
-#size = 4096
+[rng]
+address = 0x48021800
+size = 4096
 
-#[cryp]
-#address = 0x48021000
-#size = 4096
+[cryp]
+address = 0x48021000
+size = 4096

@@ -10,8 +10,7 @@ cortex-m-rt = "0.6.12"
 
 [features]
 # The stm32h735 feature enables all of STM32H723, STM32H725, STM32H730,
-# STM32H733, and STM32H735.
-default = ["h735"]
+# STM32H733, and STM32H735 in the stm32h7-hal.
 h735 = ["stm32h7/stm32h735"]
 h743 = ["stm32h7/stm32h743"]
 h753 = ["stm32h7/stm32h753"]

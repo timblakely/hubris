@@ -15,7 +15,7 @@ use stm32h7::stm32h743 as device;
 #[cfg(feature = "h753")]
 use stm32h7::stm32h753 as device;
 
-#[cfg(any(feature = "h743", feature = "h753", feature = "h735"))]
+#[cfg(any(feature = "h735", feature = "h743", feature = "h753"))]
 #[pre_init]
 unsafe fn system_pre_init() {
     // Configure the power supply to latch the LDO on and prevent further
@@ -46,6 +46,12 @@ unsafe fn system_pre_init() {
     let rcc = &*device::RCC::ptr();
     rcc.ahb2enr
         .modify(|_, w| w.sram1en().set_bit().sram2en().set_bit());
+
+    // The h72x and h73x series does not have the additional SRAM3 slot, so
+    // only flip the bit on supported platforms so as not to write to reserved
+    // memory on unsupported ones.
+    #[cfg(any(feature = "h743", feature = "h753"))]
+    rcc.ahb2enr.modify(|_, w| w.sram3en().set_bit());
 
     // Okay, yay, we can use some RAMs now.
 
@@ -109,6 +115,24 @@ pub fn system_init(config: ClockConfig) -> device::Peripherals {
     cp.DCB.enable_trace();
 
     // Make sure debugging works in standby.
+    #[cfg(any(feature = "h743", feature = "h753"))]
+    p.DBGMCU.cr.modify(|_, w| {
+        w.d3dbgcken()
+            .set_bit()
+            .d1dbgcken()
+            .set_bit()
+            .dbgstby_d1()
+            .set_bit()
+            .dbgstop_d1()
+            .set_bit()
+            .dbgsleep_d1()
+            .set_bit()
+    });
+
+    // TODO: The SVD has these incorrectly labeled, so the upstream stm32h7-hal
+    // crate generates different accessors for these fields. If the upstream
+    // crate is changed, this feature gate will no longer necessary.
+    #[cfg(feature = "h735")]
     p.DBGMCU.cr.modify(|_, w| {
         w.d3dbgcken()
             .set_bit()
