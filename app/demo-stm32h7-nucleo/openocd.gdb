@@ -1,7 +1,4 @@
-# target extended-remote :3333
-
-# Cortex debug appears to be hardcoded to port 50k...?
-# target extended-remote :50000
+target extended-remote :3333
 
 # print demangled symbols
 set print asm-demangle on

@@ -140,22 +140,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bldc"
-version = "0.1.0"
-dependencies = [
- "build-util",
- "cfg-if 0.1.10",
- "cortex-m",
- "cortex-m-rt",
- "drv-stm32h7-startup",
- "kern",
- "panic-halt",
- "panic-itm",
- "panic-semihosting",
- "stm32h7",
-]
-
-[[package]]
 name = "block-buffer"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -348,9 +332,9 @@ checksum = "6245d59a3e82a7fc217c5828a6692dbc6dfb63a0c8c90495621f7b9d79704a0e"
 
 [[package]]
 name = "cortex-m"
-version = "0.7.4"
+version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "37ff967e867ca14eba0c34ac25cd71ea98c678e741e3915d923999bb2fe7c826"
+checksum = "2ac919ef424449ec8c08d515590ce15d9262c0ca5f0da5b0c901e971a3b783b3"
 dependencies = [
  "bare-metal 0.2.5",
  "bitfield",
@@ -531,6 +515,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "demo-stm32g0-nucleo"
+version = "0.1.0"
+dependencies = [
+ "build-util",
+ "cfg-if 0.1.10",
+ "cortex-m",
+ "cortex-m-rt",
+ "kern",
+ "panic-halt",
+ "panic-itm",
+ "panic-semihosting",
+ "stm32g0",
+]
+
+[[package]]
 name = "demo-stm32h7-nucleo"
 version = "0.1.0"
 dependencies = [
@@ -606,33 +605,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d3dd60d1080a57a05ab032377049e0591415d2b31afd7028356dbf3cc6dcb066"
 dependencies = [
  "generic-array",
-]
-
-[[package]]
-name = "drv-clock-inspect"
-version = "0.1.0"
-dependencies = [
- "build-util",
- "cfg-if 0.1.10",
- "drv-clock-inspect-api",
- "drv-stm32xx-sys-api",
- "idol",
- "idol-runtime",
- "num-traits",
- "stm32h7",
- "userlib",
- "zerocopy",
-]
-
-[[package]]
-name = "drv-clock-inspect-api"
-version = "0.1.0"
-dependencies = [
- "derive-idol-err",
- "idol",
- "num-traits",
- "userlib",
- "zerocopy",
 ]
 
 [[package]]
@@ -933,6 +905,19 @@ dependencies = [
  "num-traits",
  "stm32f3",
  "stm32f4",
+ "userlib",
+ "zerocopy",
+]
+
+[[package]]
+name = "drv-stm32g0-usart"
+version = "0.1.0"
+dependencies = [
+ "cortex-m",
+ "cortex-m-semihosting",
+ "drv-stm32xx-sys-api",
+ "num-traits",
+ "stm32g0",
  "userlib",
  "zerocopy",
 ]
@@ -2564,6 +2549,7 @@ source = "git+https://github.com/oxidecomputer/stm32-rs-nightlies?branch=stm32g0
 dependencies = [
  "bare-metal 1.0.0",
  "cortex-m",
+ "cortex-m-rt",
  "vcell",
 ]
 
@@ -3066,6 +3052,21 @@ dependencies = [
  "panic-semihosting",
  "stm32f3",
  "stm32f4",
+]
+
+[[package]]
+name = "tests-stm32g0"
+version = "0.1.0"
+dependencies = [
+ "build-util",
+ "cfg-if 0.1.10",
+ "cortex-m",
+ "cortex-m-rt",
+ "kern",
+ "panic-halt",
+ "panic-itm",
+ "panic-semihosting",
+ "stm32g0",
 ]
 
 [[package]]
