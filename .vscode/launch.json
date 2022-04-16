@@ -4,35 +4,35 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
-    {
-      "type": "cortex-debug",
-      "request": "launch",
-      "name": "Demo Debug",
-      "servertype": "openocd",
-      "cwd": "${workspaceRoot}",
-      "preLaunchTask": "rust: cargo xtask dist",
-      "interface": "swd",
-      // "runToEntryPoint": "main",
-      // "executable": "./target/thumbv7em-none-eabihf/debug/h7-rs",
-      "executable": "target/demo-stm32h743-nucleo/dist/final.elf",
-      "device": "STM32H723ZG",
-      "configFiles": [
-        "${workspaceRoot}/app/demo-stm32h7-nucleo/openocd.cfg"
-      ],
-      "gdbPath": "/usr/bin/gdb-multiarch",
-      "debuggerArgs": [
-        "-q",
-        "-x",
-        "target/demo-stm32h743-nucleo/dist/script.gdb",
-        "-x",
-        "app/demo-stm32h7-nucleo/openocd.gdb"
-      ],
-      "searchDir": [],
-      "svdFile": "/home/tim/git/h7-rs/tools/stm32h723.svd",
-      "openOCDLaunchCommands": [
-        "adapter speed 24000"
-      ],
-    },
+    // {
+    //   "type": "cortex-debug",
+    //   "request": "launch",
+    //   "name": "Demo Debug",
+    //   "servertype": "openocd",
+    //   "cwd": "${workspaceRoot}",
+    //   "preLaunchTask": "rust: cargo xtask dist",
+    //   "interface": "swd",
+    //   // "runToEntryPoint": "main",
+    //   // "executable": "./target/thumbv7em-none-eabihf/debug/h7-rs",
+    //   "executable": "target/demo-stm32h743-nucleo/dist/final.elf",
+    //   "device": "STM32H723ZG",
+    //   "configFiles": [
+    //     "${workspaceRoot}/app/demo-stm32h7-nucleo/openocd.cfg"
+    //   ],
+    //   "gdbPath": "/usr/bin/gdb-multiarch",
+    //   "debuggerArgs": [
+    //     "-q",
+    //     "-x",
+    //     "target/demo-stm32h743-nucleo/dist/script.gdb",
+    //     "-x",
+    //     "app/demo-stm32h7-nucleo/openocd.gdb"
+    //   ],
+    //   "searchDir": [],
+    //   "svdFile": "/home/tim/git/h7-rs/tools/stm32h723.svd",
+    //   "openOCDLaunchCommands": [
+    //     "adapter speed 24000"
+    //   ],
+    // },
     {
       "type": "cortex-debug",
       "request": "launch",
@@ -44,7 +44,7 @@
       "executable": "target/bldc/dist/final.elf",
       "device": "STM32H723ZG",
       "configFiles": [
-        "${workspaceRoot}/app/demo-stm32h7-nucleo/openocd.cfg"
+        "${workspaceRoot}/bldc/app/openocd.cfg"
       ],
       "gdbPath": "/usr/bin/gdb-multiarch",
       "debuggerArgs": [
@@ -52,7 +52,7 @@
         "-x",
         "target/bldc/dist/script.gdb",
         "-x",
-        "app/bldc/openocd.gdb"
+        "bldc/app/openocd.gdb"
       ],
       "searchDir": [],
       "svdFile": "/home/tim/git/h7-rs/tools/stm32h723.svd",
