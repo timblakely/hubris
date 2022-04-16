@@ -531,21 +531,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "demo-stm32g0-nucleo"
-version = "0.1.0"
-dependencies = [
- "build-util",
- "cfg-if 0.1.10",
- "cortex-m",
- "cortex-m-rt",
- "kern",
- "panic-halt",
- "panic-itm",
- "panic-semihosting",
- "stm32g0",
-]
-
-[[package]]
 name = "demo-stm32h7-nucleo"
 version = "0.1.0"
 dependencies = [
@@ -948,19 +933,6 @@ dependencies = [
  "num-traits 0.2.14",
  "stm32f3",
  "stm32f4",
- "userlib",
- "zerocopy",
-]
-
-[[package]]
-name = "drv-stm32g0-usart"
-version = "0.1.0"
-dependencies = [
- "cortex-m",
- "cortex-m-semihosting",
- "drv-stm32xx-sys-api",
- "num-traits 0.2.14",
- "stm32g0",
  "userlib",
  "zerocopy",
 ]
@@ -2645,7 +2617,6 @@ source = "git+https://github.com/oxidecomputer/stm32-rs-nightlies?branch=stm32g0
 dependencies = [
  "bare-metal 1.0.0",
  "cortex-m",
- "cortex-m-rt",
  "vcell",
 ]
 
@@ -3148,21 +3119,6 @@ dependencies = [
  "panic-semihosting",
  "stm32f3",
  "stm32f4",
-]
-
-[[package]]
-name = "tests-stm32g0"
-version = "0.1.0"
-dependencies = [
- "build-util",
- "cfg-if 0.1.10",
- "cortex-m",
- "cortex-m-rt",
- "kern",
- "panic-halt",
- "panic-itm",
- "panic-semihosting",
- "stm32g0",
 ]
 
 [[package]]

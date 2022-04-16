@@ -39,7 +39,7 @@
 			"group": "build",
 			"args": [
 				"dist",
-				"app/bldc/app.toml"
+				"bldc/app/app.toml"
 			]
 		},
 		{
@@ -55,7 +55,7 @@
 			},
 			"args": [
 				"build",
-				"app/bldc/app.toml",
+				"bldc/app/app.toml",
 				"clock_inspect"
 			]
 		}
