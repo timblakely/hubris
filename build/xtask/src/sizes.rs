@@ -4,14 +4,14 @@
 
 use std::convert::TryInto;
 use std::io::Write;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use anyhow::bail;
 use goblin::Object;
 use indexmap::IndexMap;
 use termcolor::{Color, ColorSpec, WriteColor};
 
-use crate::{dist::DEFAULT_KERNEL_STACK, Config};
+use crate::{dist::DEFAULT_KERNEL_STACK, paths, Config};
 
 fn pow2_suggest(size: u64) -> u64 {
     size.next_power_of_two()
@@ -25,7 +25,11 @@ fn armv8m_suggest(size: u64) -> u64 {
 /// When `only_suggest` is true, prints only the suggested improvements to
 /// stderr, rather than printing all sizes.  Suggestions are formatted to
 /// match compiler warnings.
-pub fn run(cfg: &Path, only_suggest: bool) -> anyhow::Result<()> {
+pub fn run(
+    paths: &paths::XTaskPaths,
+    cfg: &Path,
+    only_suggest: bool,
+) -> anyhow::Result<()> {
     let s = if only_suggest {
         atty::Stream::Stderr
     } else {
@@ -45,11 +49,9 @@ pub fn run(cfg: &Path, only_suggest: bool) -> anyhow::Result<()> {
 
     let toml = Config::from_file(&cfg)?;
 
-    let mut dist_dir = dunce::canonicalize(
-        std::env::var("CARGO_TARGET_DIR").unwrap_or("target".to_string()),
-    )?;
-    dist_dir.push(&toml.name);
-    dist_dir.push("dist");
+    let mut out_dir = paths.output_dir.clone();
+    out_dir.push(&toml.name);
+    out_dir.push("dist");
 
     let mut memories = IndexMap::new();
     for (name, out) in &toml.outputs {
@@ -78,7 +80,7 @@ pub fn run(cfg: &Path, only_suggest: bool) -> anyhow::Result<()> {
     let mut suggestions = Vec::new();
     let mut check_task =
         |name: &str, stacksize: u32, requires: &IndexMap<String, u32>| {
-            let mut elf_name = dist_dir.clone();
+            let mut elf_name = out_dir.clone();
             elf_name.push(name);
             let buffer = std::fs::read(elf_name)?;
             let elf = match Object::parse(&buffer)? {

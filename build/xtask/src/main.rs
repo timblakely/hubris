@@ -19,6 +19,7 @@ mod elf;
 mod flash;
 mod gdb;
 mod humility;
+mod paths;
 mod sizes;
 mod task_slot;
 mod test;
@@ -460,14 +461,16 @@ where
 fn main() -> Result<()> {
     let xtask = Xtask::parse();
 
+    let paths = paths::config_paths()?;
+
     match xtask {
         Xtask::Dist {
             verbose,
             edges,
             cfg,
         } => {
-            dist::package(verbose, edges, &cfg, None)?;
-            sizes::run(&cfg, true)?;
+            dist::package(&paths, verbose, edges, &cfg, None)?;
+            sizes::run(&paths, &cfg, true)?;
         }
         Xtask::Build {
             verbose,
@@ -475,18 +478,18 @@ fn main() -> Result<()> {
             cfg,
             tasks,
         } => {
-            dist::package(verbose, edges, &cfg, Some(tasks))?;
+            dist::package(&paths, verbose, edges, &cfg, Some(tasks))?;
         }
         Xtask::Flash { verbose, cfg } => {
-            dist::package(verbose, false, &cfg, None)?;
+            dist::package(&paths, verbose, false, &cfg, None)?;
             flash::run(verbose, &cfg)?;
         }
         Xtask::Sizes { verbose, cfg } => {
-            dist::package(verbose, false, &cfg, None)?;
-            sizes::run(&cfg, false)?;
+            dist::package(&paths, verbose, false, &cfg, None)?;
+            sizes::run(&paths, &cfg, false)?;
         }
         Xtask::Gdb { cfg, gdb_cfg } => {
-            dist::package(false, false, &cfg, None)?;
+            dist::package(&paths, false, false, &cfg, None)?;
             gdb::run(&cfg, &gdb_cfg)?;
         }
         Xtask::Humility { cfg, options } => {
@@ -498,7 +501,7 @@ fn main() -> Result<()> {
             verbose,
         } => {
             if !noflash {
-                dist::package(verbose, false, &cfg, None)?;
+                dist::package(&paths, verbose, false, &cfg, None)?;
                 flash::run(verbose, &cfg)?;
             }
 

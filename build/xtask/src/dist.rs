@@ -17,7 +17,7 @@ use path_slash::PathBufExt;
 use serde::Serialize;
 
 use crate::{
-    elf, task_slot, Config, LoadSegment, Output, Peripheral, Signing,
+    elf, paths, task_slot, Config, LoadSegment, Output, Peripheral, Signing,
     Supervisor, Task,
 };
 
@@ -29,6 +29,7 @@ use lpc55_sign::{crc_image, signed_image};
 pub const DEFAULT_KERNEL_STACK: u32 = 1024;
 
 pub fn package(
+    paths: &paths::XTaskPaths,
     verbose: bool,
     edges: bool,
     cfg: &Path,
@@ -40,9 +41,7 @@ pub fn package(
 
     let toml = Config::from_file(&cfg)?;
 
-    let mut out = dunce::canonicalize(
-        std::env::var("CARGO_TARGET_DIR").unwrap_or("target".to_string()),
-    )?;
+    let mut out = paths.output_dir.clone();
     let buildstamp_file = out.join("buildstamp");
 
     out.push(&toml.name);
@@ -150,8 +149,7 @@ pub fn package(
         // beginning with "\\hostname\".  However, rustc expects a non-UNC
         // path for its --remap-path-prefix argument, so we use
         // `dunce::canonicalize` instead
-        let cargo_home = dunce::canonicalize(std::env::var("CARGO_HOME")?)?;
-        // println!("{:?}", cargo_home.as_os_str());
+        let cargo_home = paths.cargo_home.clone();
         let mut cargo_git = cargo_home.clone();
         cargo_git.push("git");
         cargo_git.push("checkouts");
@@ -169,10 +167,7 @@ pub fn package(
         cargo_registry.push("github.com-1ecc6299db9ec823");
         remap_paths.insert(cargo_registry, "/crates.io");
 
-        let mut hubris_dir =
-            dunce::canonicalize(std::env::var("CARGO_MANIFEST_DIR")?)?;
-        hubris_dir.pop(); // Remove "build/xtask"
-        hubris_dir.pop();
+        let hubris_dir = paths.hubris_root.clone();
         remap_paths.insert(hubris_dir, "/hubris");
         remap_paths
     };
@@ -223,6 +218,7 @@ pub fn package(
         shared_syms = Some(&bootloader.sharedsyms);
 
         generate_bootloader_linker_script(
+            &paths,
             "memory.x",
             &bootloader_memory,
             Some(&bootloader.sections),
@@ -231,15 +227,13 @@ pub fn package(
 
         {
             let kernel_link_file = include_str!("../../kernel-link.x");
-            let mut target_dir = dunce::canonicalize(
-                std::env::var("CARGO_TARGET_DIR")
-                    .unwrap_or("target".to_string()),
-            )?;
-            target_dir.push("link.x");
-            fs::write(target_dir, kernel_link_file)?;
+            let mut link_script = paths.output_dir.clone();
+            link_script.push("link.x");
+            fs::write(link_script, kernel_link_file)?;
         }
 
         build(
+            &paths,
             &toml.target,
             &toml.board,
             &src_dir.join(&bootloader.path),
@@ -294,8 +288,9 @@ pub fn package(
 
         f.read_to_end(&mut bytes)?;
 
-        let mut linkscr =
-            File::create(Path::new(&format!("target/table.ld"))).unwrap();
+        let mut link_table = paths.output_dir.clone();
+        link_table.push("table.ld");
+        let mut linkscr = File::create(link_table).unwrap();
 
         for b in bytes {
             writeln!(linkscr, "BYTE(0x{:x})", b).unwrap();
@@ -304,11 +299,9 @@ pub fn package(
         drop(linkscr);
     } else {
         // Just create a new empty file
-        let mut cargo_out = dunce::canonicalize(
-            std::env::var("CARGO_TARGET_DIR").unwrap_or("target".to_string()),
-        )?;
-        File::create(Path::new(&format!("{}/table.ld", cargo_out.display())))
-            .unwrap();
+        let mut out_dir = paths.output_dir.clone();
+        out_dir.push("table.ld");
+        File::create(out_dir).unwrap();
     }
 
     // Quick sanity-check if we're trying to build individual tasks which
@@ -343,6 +336,7 @@ Did you mean to run `cargo xtask dist`?"
         let task_toml = &toml.tasks[name];
 
         generate_task_linker_script(
+            &paths,
             "memory.x",
             &allocs.tasks[name],
             Some(&task_toml.sections),
@@ -357,15 +351,13 @@ Did you mean to run `cargo xtask dist`?"
 
         {
             let task_link_file = include_str!("../../task-link.x");
-            let mut target_dir = dunce::canonicalize(
-                std::env::var("CARGO_TARGET_DIR")
-                    .unwrap_or("target".to_string()),
-            )?;
-            target_dir.push("link.x");
-            fs::write(target_dir, task_link_file)?;
+            let mut out_dir = paths.output_dir.clone();
+            out_dir.push("link.x");
+            fs::write(out_dir, task_link_file)?;
         }
 
         build(
+            &paths,
             &toml.target,
             &toml.board,
             &src_dir.join(&task_toml.path),
@@ -430,6 +422,7 @@ Did you mean to run `cargo xtask dist`?"
     let kconfig = ron::ser::to_string(&kconfig)?;
 
     generate_kernel_linker_script(
+        &paths,
         "memory.x",
         &allocs.kernel,
         toml.kernel.stacksize.unwrap_or(DEFAULT_KERNEL_STACK),
@@ -437,15 +430,14 @@ Did you mean to run `cargo xtask dist`?"
 
     {
         let kernel_link_file = include_str!("../../kernel-link.x");
-        let mut target_dir = dunce::canonicalize(
-            std::env::var("CARGO_TARGET_DIR").unwrap_or("target".to_string()),
-        )?;
-        target_dir.push("link.x");
-        fs::write(target_dir, kernel_link_file)?;
+        let mut out_dir = paths.output_dir.clone();
+        out_dir.push("link.x");
+        fs::write(out_dir, kernel_link_file)?;
     }
 
     // Build the kernel.
     build(
+        &paths,
         &toml.target,
         &toml.board,
         &src_dir.join(&toml.kernel.path),
@@ -851,19 +843,16 @@ fn do_sign_file(
 }
 
 fn generate_bootloader_linker_script(
+    paths: &paths::XTaskPaths,
     name: &str,
     map: &IndexMap<String, Range<u32>>,
     sections: Option<&IndexMap<String, String>>,
     sharedsyms: &[String],
 ) {
     // Put the linker script somewhere the linker can find it
-    let mut cargo_out = dunce::canonicalize(
-        std::env::var("CARGO_TARGET_DIR").unwrap_or("target".to_string()),
-    )
-    .unwrap_or(Path::new("target").to_path_buf());
-    let mut linkscr =
-        File::create(Path::new(&format!("{}/{}", cargo_out.display(), name)))
-            .unwrap();
+    let mut linker_script_path = paths.output_dir.clone();
+    linker_script_path.push(name);
+    let mut linkscr = File::create(linker_script_path).unwrap();
 
     writeln!(linkscr, "MEMORY\n{{").unwrap();
     for (name, range) in map {
@@ -942,17 +931,16 @@ fn generate_bootloader_linker_script(
 }
 
 fn generate_task_linker_script(
+    paths: &paths::XTaskPaths,
     name: &str,
     map: &BTreeMap<String, Range<u32>>,
     sections: Option<&IndexMap<String, String>>,
     stacksize: u32,
 ) -> Result<()> {
     // Put the linker script somewhere the linker can find it
-    let mut cargo_out = dunce::canonicalize(
-        std::env::var("CARGO_TARGET_DIR").unwrap_or("target".to_string()),
-    )?;
-    let mut linkscr =
-        File::create(Path::new(&format!("{}/{}", cargo_out.display(), name)))?;
+    let mut linker_script_path = paths.output_dir.clone();
+    linker_script_path.push(name);
+    let mut linkscr = File::create(linker_script_path)?;
 
     fn emit(linkscr: &mut File, sec: &str, o: u32, l: u32) -> Result<()> {
         writeln!(
@@ -1005,17 +993,15 @@ fn generate_task_linker_script(
 }
 
 fn generate_kernel_linker_script(
+    paths: &paths::XTaskPaths,
     name: &str,
     map: &BTreeMap<String, Range<u32>>,
     stacksize: u32,
 ) -> Result<()> {
     // Put the linker script somewhere the linker can find it
-    let mut cargo_out = dunce::canonicalize(
-        std::env::var("CARGO_TARGET_DIR").unwrap_or("target".to_string()),
-    )?;
-    let mut linkscr =
-        File::create(Path::new(&format!("{}/{}", cargo_out.display(), name)))
-            .unwrap();
+    let mut out_dir = paths.output_dir.clone();
+    out_dir.push(name);
+    let mut linkscr = File::create(out_dir).unwrap();
 
     let mut stack_start = None;
     let mut stack_base = None;
@@ -1068,13 +1054,14 @@ fn generate_kernel_linker_script(
 }
 
 fn build(
+    paths: &paths::XTaskPaths,
     target: &str,
     board_name: &str,
     path: &Path,
     name: &str,
     features: &[String],
     dest: PathBuf,
-    mut verbose: bool,
+    verbose: bool,
     edges: bool,
     task_names: &str,
     remap_paths: &BTreeMap<PathBuf, &str>,
@@ -1085,14 +1072,6 @@ fn build(
     extra_env: &[(&str, &str)],
 ) -> Result<()> {
     println!("building path {}", path.display());
-    // if !verbose {
-    //     verbose = true;
-    // }
-
-    // for v in std::env::vars() {
-    //     println!("{}: \"{}\"", v.0, v.1);
-    // }
-    // println!("{}", target);
 
     // NOTE: current_dir's docs suggest that you should use canonicalize for
     // portability. However, that's for when you're doing stuff like:
@@ -1119,19 +1098,13 @@ fn build(
 
     // This works because we control the environment in which we're about
     // to invoke cargo, and never modify CARGO_TARGET in that environment.
-    let mut cargo_out = dunce::canonicalize(
-        std::env::var("CARGO_TARGET_DIR").unwrap_or("target".to_string()),
-    )?;
+    let mut out_dir = paths.output_dir.clone();
 
     let remap_path_prefix: String = remap_paths
         .iter()
         .map(|r| format!(" --remap-path-prefix={}={}", r.0.display(), r.1))
         .collect();
     cmd.current_dir(path);
-    if let Ok(value) = std::env::var("CARGO_TARGET_DIR") {
-        println!("Applying C_T_D: {}", value);
-        cmd.env("CARGO_TARGET_DIR", value);
-    }
     cmd.env(
         "RUSTFLAGS",
         &format!(
@@ -1143,11 +1116,10 @@ fn build(
              -C overflow-checks=y \
              {}
              ",
-            cargo_out.display(),
+            out_dir.display(),
             remap_path_prefix,
         ),
     );
-    println!("{}", cargo_out.display());
 
     cmd.env("HUBRIS_TASKS", task_names);
     cmd.env("HUBRIS_BOARD", board_name);
@@ -1221,12 +1193,10 @@ fn build(
         bail!("command failed, see output for details");
     }
 
-    cargo_out.push(target);
-    cargo_out.push("release");
-    cargo_out.push(name);
-
-    println!("{} -> {}", cargo_out.display(), dest.display());
-    std::fs::copy(&cargo_out, dest)?;
+    out_dir.push(target);
+    out_dir.push("release");
+    out_dir.push(name);
+    std::fs::copy(&out_dir, dest)?;
 
     Ok(())
 }
