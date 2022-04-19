@@ -1096,8 +1096,6 @@ fn build(
         cmd.arg(features.join(","));
     }
 
-    // This works because we control the environment in which we're about
-    // to invoke cargo, and never modify CARGO_TARGET in that environment.
     let mut out_dir = paths.output_dir.clone();
 
     let remap_path_prefix: String = remap_paths
@@ -1105,6 +1103,14 @@ fn build(
         .map(|r| format!(" --remap-path-prefix={}={}", r.0.display(), r.1))
         .collect();
     cmd.current_dir(path);
+    // We need to make sure that we respect the desired output directory. If we
+    // don't propagate these environment variables, the output of the `rustc`
+    // command will be relative to the _Hubris_ path, and _not_ the dependant crate.
+    if let Ok(value) = std::env::var("HUBRIS_BUILD_DIR")
+        .or_else(|_| std::env::var("CARGO_TARGET_DIR"))
+    {
+        cmd.env("CARGO_TARGET_DIR", value);
+    }
     cmd.env(
         "RUSTFLAGS",
         &format!(
