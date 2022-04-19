@@ -60,6 +60,48 @@
         "adapter speed 24000"
       ],
     },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "xtask bldc-hubris dist",
+      "program": "/home/tim/git/bldc-hubris/target2/debug/xtask",
+      "args": [
+        // "build",
+        "dist",
+        "app/app.toml",
+        // "clock_inspect",
+      ],
+      "cwd": "/home/tim/git/bldc-hubris",
+      "sourceMap": {
+        "/rustc/ac2d9fc509e36d1b32513744adf58c34bcc4f43c/": "/home/tim/.rustup/toolchains/nightly-2021-09-22-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/",
+      },
+      "env": {
+        "CARGO_HOME": "/home/tim/.cargo",
+        "CARGO_MANIFEST_DIR": "/home/tim/git/hubris",
+        "CARGO_TARGET_DIR": "/home/tim/git/bldc-hubris/target2"
+      }
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug executable 'xtask'",
+      "cargo": {
+        "args": [
+          "run",
+          "--message-format=json",
+          "--manifest-path=/home/tim/git/hubris/build/xtask/Cargo.toml",
+          "build",
+          "app/app.toml",
+          "task-jefe",
+        ],
+        "filter": {
+          "name": "xtask",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "/home/tim/git/bldc-hubris",
+    },
     // Disabled for now since probe-rs doesn't work with stripped binaries.
     // {
     //   "type": "probe-rs-debug",

@@ -40,7 +40,9 @@ pub fn package(
 
     let toml = Config::from_file(&cfg)?;
 
-    let mut out = PathBuf::from("target");
+    let mut out = dunce::canonicalize(
+        std::env::var("CARGO_TARGET_DIR").unwrap_or("target".to_string()),
+    )?;
     let buildstamp_file = out.join("buildstamp");
 
     out.push(&toml.name);
@@ -149,6 +151,7 @@ pub fn package(
         // path for its --remap-path-prefix argument, so we use
         // `dunce::canonicalize` instead
         let cargo_home = dunce::canonicalize(std::env::var("CARGO_HOME")?)?;
+        // println!("{:?}", cargo_home.as_os_str());
         let mut cargo_git = cargo_home.clone();
         cargo_git.push("git");
         cargo_git.push("checkouts");
@@ -226,7 +229,15 @@ pub fn package(
             &bootloader.sharedsyms,
         );
 
-        fs::copy("build/kernel-link.x", "target/link.x")?;
+        {
+            let kernel_link_file = include_str!("../../kernel-link.x");
+            let mut target_dir = dunce::canonicalize(
+                std::env::var("CARGO_TARGET_DIR")
+                    .unwrap_or("target".to_string()),
+            )?;
+            target_dir.push("link.x");
+            fs::write(target_dir, kernel_link_file)?;
+        }
 
         build(
             &toml.target,
@@ -293,7 +304,11 @@ pub fn package(
         drop(linkscr);
     } else {
         // Just create a new empty file
-        File::create(Path::new(&format!("target/table.ld"))).unwrap();
+        let mut cargo_out = dunce::canonicalize(
+            std::env::var("CARGO_TARGET_DIR").unwrap_or("target".to_string()),
+        )?;
+        File::create(Path::new(&format!("{}/table.ld", cargo_out.display())))
+            .unwrap();
     }
 
     // Quick sanity-check if we're trying to build individual tasks which
@@ -340,7 +355,15 @@ Did you mean to run `cargo xtask dist`?"
         )
         .context(format!("failed to generate linker script for {}", name))?;
 
-        fs::copy("build/task-link.x", "target/link.x")?;
+        {
+            let task_link_file = include_str!("../../task-link.x");
+            let mut target_dir = dunce::canonicalize(
+                std::env::var("CARGO_TARGET_DIR")
+                    .unwrap_or("target".to_string()),
+            )?;
+            target_dir.push("link.x");
+            fs::write(target_dir, task_link_file)?;
+        }
 
         build(
             &toml.target,
@@ -412,7 +435,14 @@ Did you mean to run `cargo xtask dist`?"
         toml.kernel.stacksize.unwrap_or(DEFAULT_KERNEL_STACK),
     )?;
 
-    fs::copy("build/kernel-link.x", "target/link.x")?;
+    {
+        let kernel_link_file = include_str!("../../kernel-link.x");
+        let mut target_dir = dunce::canonicalize(
+            std::env::var("CARGO_TARGET_DIR").unwrap_or("target".to_string()),
+        )?;
+        target_dir.push("link.x");
+        fs::write(target_dir, kernel_link_file)?;
+    }
 
     // Build the kernel.
     build(
@@ -678,7 +708,7 @@ Did you mean to run `cargo xtask dist`?"
     // any external configuration files, serialize it, and add it to the
     // archive.
     //
-    let mut config = crate::flash::config(&toml.board.as_str())?;
+    let mut config = crate::flash::config(&toml)?;
     config.flatten()?;
 
     archive.text(img_dir.join("flash.ron"), ron::to_string(&config)?)?;
@@ -827,8 +857,13 @@ fn generate_bootloader_linker_script(
     sharedsyms: &[String],
 ) {
     // Put the linker script somewhere the linker can find it
+    let mut cargo_out = dunce::canonicalize(
+        std::env::var("CARGO_TARGET_DIR").unwrap_or("target".to_string()),
+    )
+    .unwrap_or(Path::new("target").to_path_buf());
     let mut linkscr =
-        File::create(Path::new(&format!("target/{}", name))).unwrap();
+        File::create(Path::new(&format!("{}/{}", cargo_out.display(), name)))
+            .unwrap();
 
     writeln!(linkscr, "MEMORY\n{{").unwrap();
     for (name, range) in map {
@@ -913,7 +948,11 @@ fn generate_task_linker_script(
     stacksize: u32,
 ) -> Result<()> {
     // Put the linker script somewhere the linker can find it
-    let mut linkscr = File::create(Path::new(&format!("target/{}", name)))?;
+    let mut cargo_out = dunce::canonicalize(
+        std::env::var("CARGO_TARGET_DIR").unwrap_or("target".to_string()),
+    )?;
+    let mut linkscr =
+        File::create(Path::new(&format!("{}/{}", cargo_out.display(), name)))?;
 
     fn emit(linkscr: &mut File, sec: &str, o: u32, l: u32) -> Result<()> {
         writeln!(
@@ -971,8 +1010,12 @@ fn generate_kernel_linker_script(
     stacksize: u32,
 ) -> Result<()> {
     // Put the linker script somewhere the linker can find it
+    let mut cargo_out = dunce::canonicalize(
+        std::env::var("CARGO_TARGET_DIR").unwrap_or("target".to_string()),
+    )?;
     let mut linkscr =
-        File::create(Path::new(&format!("target/{}", name))).unwrap();
+        File::create(Path::new(&format!("{}/{}", cargo_out.display(), name)))
+            .unwrap();
 
     let mut stack_start = None;
     let mut stack_base = None;
@@ -1031,7 +1074,7 @@ fn build(
     name: &str,
     features: &[String],
     dest: PathBuf,
-    verbose: bool,
+    mut verbose: bool,
     edges: bool,
     task_names: &str,
     remap_paths: &BTreeMap<PathBuf, &str>,
@@ -1042,6 +1085,14 @@ fn build(
     extra_env: &[(&str, &str)],
 ) -> Result<()> {
     println!("building path {}", path.display());
+    // if !verbose {
+    //     verbose = true;
+    // }
+
+    // for v in std::env::vars() {
+    //     println!("{}: \"{}\"", v.0, v.1);
+    // }
+    // println!("{}", target);
 
     // NOTE: current_dir's docs suggest that you should use canonicalize for
     // portability. However, that's for when you're doing stuff like:
@@ -1068,13 +1119,19 @@ fn build(
 
     // This works because we control the environment in which we're about
     // to invoke cargo, and never modify CARGO_TARGET in that environment.
-    let mut cargo_out = Path::new("target").to_path_buf();
+    let mut cargo_out = dunce::canonicalize(
+        std::env::var("CARGO_TARGET_DIR").unwrap_or("target".to_string()),
+    )?;
 
     let remap_path_prefix: String = remap_paths
         .iter()
         .map(|r| format!(" --remap-path-prefix={}={}", r.0.display(), r.1))
         .collect();
     cmd.current_dir(path);
+    if let Ok(value) = std::env::var("CARGO_TARGET_DIR") {
+        println!("Applying C_T_D: {}", value);
+        cmd.env("CARGO_TARGET_DIR", value);
+    }
     cmd.env(
         "RUSTFLAGS",
         &format!(
@@ -1090,6 +1147,7 @@ fn build(
             remap_path_prefix,
         ),
     );
+    println!("{}", cargo_out.display());
 
     cmd.env("HUBRIS_TASKS", task_names);
     cmd.env("HUBRIS_BOARD", board_name);

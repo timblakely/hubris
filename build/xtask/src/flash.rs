@@ -134,7 +134,23 @@ impl FlashConfig {
     }
 }
 
-pub fn config(board: &str) -> anyhow::Result<FlashConfig> {
+pub fn config(toml: &Config) -> anyhow::Result<FlashConfig> {
+    if let Some(cfg) = &toml.flash_config {
+        let cfg = FlashProgramConfig::new([cfg.as_str()].to_vec());
+
+        let mut flash = FlashConfig::new(FlashProgram::OpenOcd(cfg));
+
+        flash
+            .arg("-f")
+            .config()
+            .arg("-c")
+            .formatted_payload("program", "verify reset")
+            .arg("-c")
+            .arg("exit");
+
+        return Ok(flash);
+    }
+    let board = toml.board.as_str();
     match board {
         "lpcxpresso55s69" | "gemini-bu-rot-1" | "gimlet-rot-1" => {
             let chip = if board == "lpcxpresso55s69" {
