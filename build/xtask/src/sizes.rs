@@ -45,7 +45,9 @@ pub fn run(cfg: &Path, only_suggest: bool) -> anyhow::Result<()> {
 
     let toml = Config::from_file(&cfg)?;
 
-    let mut dist_dir = PathBuf::from("target");
+    let mut dist_dir = dunce::canonicalize(
+        std::env::var("CARGO_TARGET_DIR").unwrap_or("target".to_string()),
+    )?;
     dist_dir.push(&toml.name);
     dist_dir.push("dist");
 

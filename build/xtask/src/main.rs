@@ -168,10 +168,12 @@ struct RawConfig {
     supervisor: Option<Supervisor>,
     #[serde(default)]
     config: Option<ordered_toml::Value>,
+    #[serde(default)]
+    flash_config: Option<String>,
 }
 
 #[derive(Clone, Debug)]
-struct Config {
+pub struct Config {
     name: String,
     target: String,
     board: String,
@@ -188,6 +190,7 @@ struct Config {
     supervisor: Option<Supervisor>,
     config: Option<ordered_toml::Value>,
     buildhash: u64,
+    flash_config: Option<String>,
 }
 
 impl Config {
@@ -215,6 +218,17 @@ impl Config {
 
         let buildhash = hasher.finish();
 
+        let flash_config = match toml.flash_config {
+            Some(path) => Some(
+                cfg.parent()
+                    .unwrap()
+                    .join(path)
+                    .to_string_lossy()
+                    .to_string(),
+            ),
+            None => None,
+        };
+
         Ok(Config {
             name: toml.name,
             target: toml.target,
@@ -232,6 +246,7 @@ impl Config {
             supervisor: toml.supervisor,
             config: toml.config,
             buildhash,
+            flash_config,
         })
     }
 }
