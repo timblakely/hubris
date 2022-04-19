@@ -15,7 +15,7 @@ pub struct XTaskPaths {
     // `env("CARGO_MANIFEST_DIR")`.
     pub hubris_root: PathBuf,
     // Absolute path to the cargo output directory (read: `target`). Pulled
-    // from `env("HUBRIS_TARGET")`, then falls back to
+    // from `env("HUBRIS_BUILD_DIR")`, then falls back to
     // `env("CARGO_TARGET_DIR")`.
     pub output_dir: PathBuf,
 }
@@ -47,11 +47,12 @@ pub fn config_paths() -> Result<XTaskPaths> {
             },
         )?,
     )?;
-    let output_dir =
-        dunce::canonicalize(std::env::var("HUBRIS_TARGET").or_else(|_| {
+    let output_dir = dunce::canonicalize(
+        std::env::var("HUBRIS_BUILD_DIR").or_else(|_| {
             //asdf
             std::env::var("CARGO_TARGET_DIR")
-        })?)?;
+        })?,
+    )?;
     Ok(XTaskPaths {
         cargo_home,
         hubris_root,
