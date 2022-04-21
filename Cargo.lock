@@ -195,7 +195,7 @@ dependencies = [
  "multimap",
  "proc-macro2",
  "quote",
- "serde",
+ "serde 1.0.130",
  "syn",
 ]
 
@@ -652,6 +652,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "drv-eeprom"
+version = "0.1.0"
+dependencies = [
+ "build-i2c",
+ "derive-idol-err",
+ "drv-i2c-api",
+ "drv-i2c-devices",
+ "idol",
+ "idol-runtime",
+ "num-traits 0.2.14",
+ "userlib",
+ "zerocopy",
+]
+
+[[package]]
 name = "drv-gimlet-hf-api"
 version = "0.1.0"
 dependencies = [
@@ -736,6 +751,7 @@ dependencies = [
 name = "drv-i2c-api"
 version = "0.1.0"
 dependencies = [
+ "derive-idol-err",
  "num-traits 0.2.14",
  "ringbuf",
  "userlib",
@@ -747,6 +763,7 @@ name = "drv-i2c-devices"
 version = "0.1.0"
 dependencies = [
  "bitfield",
+ "derive-idol-err",
  "drv-i2c-api",
  "drv-onewire",
  "num-traits 0.2.14",
@@ -844,7 +861,7 @@ dependencies = [
  "lpc55-pac",
  "num-traits 0.2.14",
  "ringbuf",
- "serde",
+ "serde 1.0.130",
  "userlib",
  "zerocopy",
 ]
@@ -885,7 +902,7 @@ dependencies = [
  "drv-lpc55-gpio-api",
  "drv-lpc55-syscon-api",
  "lpc55-pac",
- "serde",
+ "serde 1.0.130",
  "userlib",
  "zerocopy",
 ]
@@ -3173,9 +3190,12 @@ dependencies = [
 name = "test-suite"
 version = "0.1.0"
 dependencies = [
+ "build-i2c",
  "build-util",
  "cfg-if 0.1.10",
  "cortex-m",
+ "drv-i2c-api",
+ "drv-i2c-devices",
  "hubris-num-tasks",
  "hypocalls",
  "num-traits 0.2.14",
