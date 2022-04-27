@@ -18,8 +18,8 @@ struct Settings {
 
 const CONFIG_FILE: &str = ".vscode/settings.json";
 
-pub fn hi(cfg: &Path) -> Result<()> {
-    println!("Hi: {}", cfg.display());
+pub fn modify_settings(cfg: &Path) -> Result<()> {
+    println!("App config: {}", cfg.display());
 
     let toml = Config::from_file(&cfg)?;
 

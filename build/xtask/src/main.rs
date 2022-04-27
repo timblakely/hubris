@@ -532,7 +532,7 @@ fn main() -> Result<()> {
             task_slot::dump_task_slot_table(&task_bin)?;
         }
         Xtask::VSCode { cfg } => {
-            vscode::hi(&cfg)?;
+            vscode::modify_settings(&cfg)?;
         }
     }
 
