@@ -200,22 +200,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "build-lpc55pins"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "build-util",
- "cfg-if 0.1.10",
- "convert_case 0.4.0",
- "indexmap",
- "multimap",
- "proc-macro2",
- "quote",
- "serde",
- "syn",
-]
-
-[[package]]
 name = "build-net"
 version = "0.1.0"
 dependencies = [
@@ -677,7 +661,7 @@ dependencies = [
  "drv-i2c-devices",
  "idol",
  "idol-runtime",
- "num-traits",
+ "num-traits 0.2.14",
  "userlib",
  "zerocopy",
 ]
@@ -768,7 +752,7 @@ name = "drv-i2c-api"
 version = "0.1.0"
 dependencies = [
  "derive-idol-err",
- "num-traits",
+ "num-traits 0.2.14",
  "ringbuf",
  "userlib",
  "zerocopy",
@@ -820,7 +804,7 @@ dependencies = [
  "cfg-if 0.1.10",
  "derive-idol-err",
  "idol",
- "num-traits",
+ "num-traits 0.2.14",
  "userlib",
  "zerocopy",
 ]
@@ -847,7 +831,7 @@ dependencies = [
  "idol",
  "idol-runtime",
  "lpc55-pac",
- "num-traits",
+ "num-traits 0.2.14",
  "rand_chacha",
  "rand_core",
  "userlib",
@@ -877,7 +861,7 @@ dependencies = [
  "lpc55-pac",
  "num-traits 0.2.14",
  "ringbuf",
- "serde",
+ "serde 1.0.130",
  "userlib",
  "zerocopy",
 ]
@@ -903,7 +887,7 @@ dependencies = [
  "build-util",
  "derive-idol-err",
  "idol",
- "num-traits",
+ "num-traits 0.2.14",
  "userlib",
  "zerocopy",
 ]
@@ -918,7 +902,7 @@ dependencies = [
  "drv-lpc55-gpio-api",
  "drv-lpc55-syscon-api",
  "lpc55-pac",
- "serde",
+ "serde 1.0.130",
  "userlib",
  "zerocopy",
 ]
@@ -951,20 +935,6 @@ dependencies = [
  "idol",
  "num",
  "num-traits 0.2.14",
- "rand_core",
- "userlib",
- "zerocopy",
-]
-
-[[package]]
-name = "drv-rng-api"
-version = "0.1.0"
-dependencies = [
- "abi",
- "getrandom",
- "idol",
- "num",
- "num-traits",
  "rand_core",
  "userlib",
  "zerocopy",
@@ -1128,7 +1098,7 @@ dependencies = [
  "drv-stm32xx-sys-api",
  "idol",
  "idol-runtime",
- "num-traits",
+ "num-traits 0.2.14",
  "stm32h7",
  "userlib",
  "zerocopy",
@@ -1225,7 +1195,7 @@ dependencies = [
  "derive-idol-err",
  "drv-stm32xx-gpio-common",
  "idol",
- "num-traits",
+ "num-traits 0.2.14",
  "userlib",
  "zerocopy",
 ]
@@ -1884,7 +1854,7 @@ dependencies = [
  "num-integer",
  "num-iter",
  "num-rational",
- "num-traits",
+ "num-traits 0.2.14",
 ]
 
 [[package]]
@@ -1922,7 +1892,7 @@ version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "26873667bbbb7c5182d4a37c1add32cdf09f841af72da53318fdb81543c15085"
 dependencies = [
- "num-traits",
+ "num-traits 0.2.14",
 ]
 
 [[package]]
@@ -1975,17 +1945,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "92e5113e9fd4cc14ded8e499429f396a20f98c772a47cc8622a736e1ec843c31"
 dependencies = [
  "num-traits 0.2.14",
-]
-
-[[package]]
-name = "num-rational"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d41702bd167c2df5520b384281bc111a4b5efcf7fbc4c9c222c815b07e0a6a6a"
-dependencies = [
- "autocfg 1.0.1",
- "num-integer",
- "num-traits",
 ]
 
 [[package]]
@@ -2862,7 +2821,7 @@ version = "0.1.0"
 dependencies = [
  "proc-macro2",
  "quote",
- "serde",
+ "serde 1.0.130",
  "syn",
  "toml",
 ]
@@ -3239,7 +3198,7 @@ dependencies = [
  "drv-i2c-devices",
  "hubris-num-tasks",
  "hypocalls",
- "num-traits",
+ "num-traits 0.2.14",
  "task-config",
  "test-api",
  "test-idol-api",
