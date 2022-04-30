@@ -1,0 +1,21 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "cargo",
+      "command": "xtask",
+      "problemMatcher": [
+        "$rustc"
+      ],
+      "label": "xtask dist bldc",
+      "group": {
+        "kind": "build",
+        "isDefault": true,
+      },
+      "args": [
+        "dist",
+        "bldc/app/app.toml"
+      ]
+    },
+  ]
+}
