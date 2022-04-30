@@ -6,6 +6,7 @@ size = 1024
 address = 0x58020000
 size = 0x2000
 
+# Note: Oddly doesn't exist for some reason on the STM32H72x and H73x series...?
 [gpios2]
 address = 0x58022000
 size = 0x0800

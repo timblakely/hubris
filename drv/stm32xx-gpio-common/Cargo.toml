@@ -55,12 +55,15 @@ family-stm32h7 = [
     "has-port-gpiof",
     "has-port-gpiog",
     "has-port-gpioh",
-    "has-port-gpioi",
+    # GPIOI is strangely absent on the H72x and H73x series...?
     "has-port-gpioj",
     "has-port-gpiok",
 ]
-model-stm32h743 = ["family-stm32h7"]
-model-stm32h753 = ["family-stm32h7"]
+model-stm32h72x-stm32h73x = ["family-stm32h7"]
+model-stm32h72x = ["model-stm32h72x-stm32h73x"]
+model-stm32h73x = ["model-stm32h72x-stm32h73x"]
+model-stm32h743 = ["family-stm32h7", "has-port-gpioi",]
+model-stm32h753 = ["family-stm32h7", "has-port-gpioi",]
 
 # The has-gpioX-type features indicates that the PAC for the chosen model calls
 # at least some of the GPIO ports `gpioX`. Note that this has nothing to do

@@ -7,6 +7,7 @@ version = "0.1.0"
 [features]
 itm = ["panic-itm", "kern/klog-itm"]
 semihosting = ["panic-semihosting", "kern/klog-semihosting"]
+h723 = ["stm32h7/stm32h735", "drv-stm32h7-startup/h723"]
 h743 = ["stm32h7/stm32h743", "drv-stm32h7-startup/h743"]
 h753 = ["stm32h7/stm32h753", "drv-stm32h7-startup/h753"]
 
