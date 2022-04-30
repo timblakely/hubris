@@ -17,6 +17,10 @@ idol = {git = "https://github.com/oxidecomputer/idolatry.git"}
 
 [features]
 family-stm32h7 = ["drv-stm32xx-gpio-common/family-stm32h7"]
+family-stm32h72x-stm32h73x = ["family-stm32h7", "drv-stm32xx-gpio-common/model-stm32h72x-stm32h73x"]
+family-stm32h72x = ["family-stm32h72x-stm32h73x"]
+family-stm32h73x = ["family-stm32h72x-stm32h73x"]
+h723 = ["family-stm32h72x"]
 h743 = ["family-stm32h7", "drv-stm32xx-gpio-common/model-stm32h743"]
 h753 = ["family-stm32h7", "drv-stm32xx-gpio-common/model-stm32h753"]
 

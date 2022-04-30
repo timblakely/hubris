@@ -28,7 +28,9 @@ cfg_if::cfg_if! {
     } else if #[cfg(feature = "family-stm32h7")] {
         use stm32h7 as pac;
         cfg_if::cfg_if! {
-            if #[cfg(feature = "model-stm32h743")] {
+            if #[cfg(feature = "model-stm32h72x-stm32h73x")] {
+                use pac::stm32h735 as device;
+            } else if #[cfg(feature = "model-stm32h743")] {
                 use pac::stm32h743 as device;
             } else if #[cfg(feature = "model-stm32h753")] {
                 use pac::stm32h753 as device;

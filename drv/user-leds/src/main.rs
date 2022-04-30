@@ -355,7 +355,7 @@ cfg_if::cfg_if! {
                     (drv_stm32xx_sys_api::Port::G.pin(2), true),
                     (drv_stm32xx_sys_api::Port::G.pin(11), true),
                 ];
-            } else if #[cfg(any(target_board = "nucleo-h743zi2", target_board = "nucleo-h753zi"))] {
+            } else if #[cfg(any(target_board = "nucleo-h723zg", target_board = "nucleo-h743zi2", target_board = "nucleo-h753zi"))] {
                 // Nucleo boards: LEDs are on PB0, PB14 and PE1.
                 const LEDS: &[(drv_stm32xx_sys_api::PinSet, bool)] = &[
                     (drv_stm32xx_sys_api::Port::B.pin(0), false),

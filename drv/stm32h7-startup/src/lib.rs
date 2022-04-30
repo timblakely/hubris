@@ -6,13 +6,20 @@
 
 use cortex_m_rt::pre_init;
 
+#[cfg(feature = "family-stm32h72x-stm32h73x")]
+use stm32h7::stm32h735 as device;
+
 #[cfg(feature = "h743")]
 use stm32h7::stm32h743 as device;
 
 #[cfg(feature = "h753")]
 use stm32h7::stm32h753 as device;
 
-#[cfg(any(feature = "h743", feature = "h753"))]
+#[cfg(any(
+    feature = "h743",
+    feature = "h753",
+    feature = "family-stm32h72x-stm32h73x"
+))]
 #[pre_init]
 unsafe fn system_pre_init() {
     // Configure the power supply to latch the LDO on and prevent further
@@ -41,14 +48,13 @@ unsafe fn system_pre_init() {
 
     // Turn on the internal RAMs.
     let rcc = &*device::RCC::ptr();
-    rcc.ahb2enr.modify(|_, w| {
-        w.sram1en()
-            .set_bit()
-            .sram2en()
-            .set_bit()
-            .sram3en()
-            .set_bit()
-    });
+    rcc.ahb2enr
+        .modify(|_, w| w.sram1en().set_bit().sram2en().set_bit());
+
+    #[cfg(not(feature = "family-stm32h72x-stm32h73x"))]
+    {
+        rcc.ahb2enr.modify(|_, w| w.sram3en().set_bit());
+    }
 
     // Okay, yay, we can use some RAMs now.
 
@@ -112,18 +118,36 @@ pub fn system_init(config: ClockConfig) -> device::Peripherals {
     cp.DCB.enable_trace();
 
     // Make sure debugging works in standby.
-    p.DBGMCU.cr.modify(|_, w| {
-        w.d3dbgcken()
-            .set_bit()
-            .d1dbgcken()
-            .set_bit()
-            .dbgstby_d1()
-            .set_bit()
-            .dbgstop_d1()
-            .set_bit()
-            .dbgsleep_d1()
-            .set_bit()
-    });
+    #[cfg(not(feature = "family-stm32h72x-stm32h73x"))]
+    {
+        p.DBGMCU.cr.modify(|_, w| {
+            w.d3dbgcken()
+                .set_bit()
+                .d1dbgcken()
+                .set_bit()
+                .dbgstby_d1()
+                .set_bit()
+                .dbgstop_d1()
+                .set_bit()
+                .dbgsleep_d1()
+                .set_bit()
+        });
+    }
+    #[cfg(feature = "family-stm32h72x-stm32h73x")]
+    {
+        p.DBGMCU.cr.modify(|_, w| {
+            w.d3dbgcken()
+                .set_bit()
+                .d1dbgcken()
+                .set_bit()
+                .dbgstbd1()
+                .set_bit()
+                .dbgstpd1()
+                .set_bit()
+                .dbgslpd1()
+                .set_bit()
+        });
+    }
 
     // Set up SYSCFG selections so drivers don't have to.
     p.RCC.apb4enr.modify(|_, w| w.syscfgen().enabled());
@@ -144,7 +168,8 @@ pub fn system_init(config: ClockConfig) -> device::Peripherals {
     // Our goal is now to boost the CPU frequency to its final level. This means
     // raising the core supply voltage from VOS3 and adding wait states or
     // reduced divisors to a bunch of things, and then finally making the actual
-    // change. (The target state is VOS1 on the H743/53, and VOS0 on H7B3.)
+    // change. (The target state is VOS1 on the H743/53, and VOS0 on H7B3 and
+    // H72x/H73x.)
 
     // We're allowed to hop directly from VOS3 to the target state; the manual
     // doesn't say this explicitly but the ST drivers do it.
@@ -152,7 +177,14 @@ pub fn system_init(config: ClockConfig) -> device::Peripherals {
     // We want to set the same bits on both SoCs despite the naming differences.
     // On the H7B3, the register we're calling "D3CR" here is called "SRDCR" in
     // certain editions of the manual.
-    p.PWR.d3cr.write(|w| unsafe { w.vos().bits(0b11) });
+    #[cfg(any(feature = "h743", feature = "h753"))]
+    {
+        p.PWR.d3cr.write(|w| unsafe { w.vos().bits(0b11) });
+    }
+    #[cfg(feature = "family-stm32h72x-stm32h73x")]
+    {
+        p.PWR.d3cr.write(|w| unsafe { w.vos().bits(0b00) });
+    }
     // Busy-wait for the voltage to reach the right level.
     while !p.PWR.d3cr.read().vosrdy().bit() {
         // spin
