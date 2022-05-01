@@ -94,15 +94,15 @@ requires = {flash = 2048, ram = 1024}
 uses = ["rcc", "gpios1", "gpios3"]
 start = true
 
-# [tasks.clock_inspect]
-# path = "../drv/clock-inspect"
-# name = "drv-clock-inspect"
-# features = ["h723"]
-# priority = 2
-# requires = {flash = 2048, ram = 1024}
-# start = true
-# task-slots = ["sys"]
-# uses = ["rcc"]
+[tasks.clock_inspect]
+path = "../drv/clock-inspect"
+name = "drv-clock-inspect"
+features = ["h723"]
+priority = 2
+requires = {flash = 2048, ram = 1024}
+start = true
+task-slots = ["sys"]
+uses = ["rcc"]
 
 [tasks.hiffy]
 path = "../../task/hiffy"

@@ -1,0 +1,16 @@
+// API to inspect RCC clocks.
+
+Interface(
+    name: "ClockInspect",
+    ops: {
+        "mco1_en": (
+            args: {
+                "enable": "bool",
+            },
+            reply: Result(
+                ok: "u8",
+                err: CLike("ClockError"),
+            ),
+        ),
+    },
+)

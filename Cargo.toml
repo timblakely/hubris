@@ -3,6 +3,8 @@ cargo-features = ["resolver", "named-profiles"]
 [workspace]
 members = [
     "bldc/app",
+    "bldc/drv/clock-inspect",
+    "bldc/drv/clock-inspect-api",
 
     "build/call_rustfmt",
     "build/i2c",
