@@ -5,7 +5,7 @@ name = "bldc"
 version = "0.1.0"
 
 [features]
-default = ["h723"]
+default = ["h723", "itm"]
 itm = ["panic-itm", "kern/klog-itm"]
 semihosting = ["panic-semihosting", "kern/klog-semihosting"]
 h723 = ["stm32h7/stm32h735", "drv-stm32h7-startup/h723"]
