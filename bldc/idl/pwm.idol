@@ -1,0 +1,17 @@
+// API to manipulate PWM output.
+
+Interface(
+    name: "Pwm",
+    ops: {
+        "set_duty": (
+            args: {
+                "channel": "u8",
+                "duty": "u16",
+            },
+            reply: Result(
+                ok: "u16",
+                err: CLike("PwmError"),
+            ),
+        ),
+    },
+)

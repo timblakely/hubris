@@ -99,7 +99,7 @@ path = "../drv/clock-inspect"
 name = "drv-clock-inspect"
 features = ["h723"]
 priority = 2
-requires = {flash = 2048, ram = 1024}
+requires = {flash = 1024, ram = 1024}
 start = true
 task-slots = ["sys"]
 uses = ["rcc"]
@@ -109,7 +109,22 @@ path = "../../task/hiffy"
 name = "task-hiffy"
 features = ["h723", "itm", "gpio"]
 priority = 3
-requires = {flash = 32768, ram = 32768 }
+requires = {flash = 16384, ram = 16384 }
 stacksize = 2048
 start = true
 task-slots = ["sys", "i2c_driver"]
+
+[tasks.pwm]
+path = "../drv/pwm"
+name = "drv-pwm"
+features = ["stm32h7", "h723"]
+priority = 1
+requires = {flash = 2048, ram = 1024}
+start = true
+task-slots = ["sys"]
+uses = ["tim1", "gpios1", "gpios3"]
+
+[tasks.pwm.interrupts]
+"tim1.upd" = 1
+"tim1.trg" = 2
+"tim1.cc" = 4

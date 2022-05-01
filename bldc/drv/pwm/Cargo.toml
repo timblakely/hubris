@@ -1,0 +1,33 @@
+[package]
+name = "drv-pwm"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+cortex-m = { version = "0.7", features = ["inline-asm"] }
+cortex-m-rt = "0.6.12"
+userlib = {path = "../../../sys/userlib"}
+drv-stm32xx-sys-api = {path = "../../../drv/stm32xx-sys-api"}
+zerocopy = "0.6.1"
+num-traits = { version = "0.2.12", default-features = false }
+cfg-if = "0.1.10"
+idol-runtime = {git = "https://github.com/oxidecomputer/idolatry.git"}
+stm32h7 = { version = "0.14", default-features = false, features = ["rt", "stm32h735"], optional = true}
+drv-pwm-api = {path = "../pwm-api"}
+
+[build-dependencies]
+build-util = {path = "../../../build/util"}
+idol = {git = "https://github.com/oxidecomputer/idolatry.git"}
+
+[features]
+# This default is required for RustAnalyzer to successfully grok all the various dependencies.
+default = ["h723"]
+h723 = ["stm32h7/stm32h735", "drv-stm32xx-sys-api/h723"]
+panic-messages = ["userlib/panic-messages"]
+
+# This section is here to discourage RLS/rust-analyzer from doing test builds,
+# since test builds don't work for cross compilation.
+[[bin]]
+name = "drv-pwm"
+test = false
+bench = false

@@ -135,3 +135,13 @@ size = 4096
 #[cryp]
 #address = 0x48021000
 #size = 4096
+
+[tim1]
+address = 0x40010000
+size = 1024
+
+[tim1.interrupts]
+brk = 24
+upd = 25
+trg = 26
+cc = 27
