@@ -10,11 +10,28 @@
       "label": "xtask dist bldc",
       "group": {
         "kind": "build",
-        "isDefault": true,
+        // "isDefault": true,
       },
       "args": [
         "dist",
         "bldc/app/app.toml"
+      ]
+    },
+    {
+      "type": "cargo",
+      "command": "xtask",
+      "problemMatcher": [
+        "$rustc"
+      ],
+      "label": "xtask build pwm",
+      "group": {
+        "kind": "build",
+        "isDefault": true,
+      },
+      "args": [
+        "build",
+        "bldc/app/app.toml",
+        "pwm"
       ]
     },
   ]

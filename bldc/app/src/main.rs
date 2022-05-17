@@ -12,6 +12,17 @@ use stm32h7::stm32h735 as device;
 use cortex_m_rt::entry;
 use drv_stm32h7_startup::{system_init, ClockConfig};
 
+use device::interrupt;
+
+#[interrupt]
+unsafe fn TIM_CC() {
+    // Clear the hardware timer directly.
+    let timer = &*device::TIM1::ptr();
+    timer.sr.write(|w| w.cc4if().clear());
+    // Call into Hubris' default IRQ handler and let it take care of the rest.
+    kern::arch::DefaultHandler();
+}
+
 #[entry]
 fn main() -> ! {
     // The stm32h7 can technically go up to 550MHz, but if we go over 520MHz we have to turn off

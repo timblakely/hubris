@@ -11,8 +11,8 @@ use userlib::*;
 
 task_slot!(SYS, sys);
 
-const TIM1_UPD_MASK: u32 = 1 << 0;
-const TIM1_TRG_MASK: u32 = 1 << 1;
+const _TIM1_UPD_MASK: u32 = 1 << 0;
+const _TIM1_TRG_MASK: u32 = 1 << 1;
 const TIM1_CC_MASK: u32 = 1 << 2;
 
 fn configure_pwm(tim: &device::tim1::RegisterBlock) {
@@ -112,7 +112,7 @@ fn configure_pwm(tim: &device::tim1::RegisterBlock) {
     // Set ccr values to 0 for all three channels.
     tim.ccr1.write(|w| w.ccr().bits(1000));
     tim.ccr2.write(|w| w.ccr().bits(2000));
-    tim.ccr3.write(|w| w.ccr().bits(2500));
+    tim.ccr3.write(|w| w.ccr().bits(3250));
     // Set ch5 to PWM mode and enable it.
     // PWM mode 1 is 0110, which is spread out over two separate contiguous bit ranges.
     tim.ccmr3_output
@@ -133,8 +133,6 @@ fn configure_pwm(tim: &device::tim1::RegisterBlock) {
     });
     // Finally, set trgo2 to fire just before the middle of the deadtime midpoint.
     tim.ccr4.modify(|_, w| w.ccr().bits(3249));
-    // TODO(blakely): Remove this after ensuring this is working correctly.
-    tim.dier.modify(|_, w| w.cc4ie().enabled());
 }
 
 struct ServerImpl {
@@ -215,6 +213,8 @@ fn main() -> ! {
     // just reference it.
     let timer = unsafe { &*device::TIM1::ptr() };
     configure_pwm(&timer);
+    // TODO(blakely): Remove this after ensuring this is working correctly.
+    timer.dier.modify(|_, w| w.cc4ie().enabled());
 
     // Kick off the timer.
     timer.cr1.modify(|_, w| w.cen().set_bit());
