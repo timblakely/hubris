@@ -7,7 +7,7 @@ stacksize = 896
 [kernel]
 path = "."
 name = "bldc"
-requires = {flash = 21452, ram = 4096}
+requires = {flash = 32768, ram = 4096}
 #
 # For the kernel (and for any task that logs), we are required to enable
 # either "itm" (denoting logging/panicking via ARM's Instrumentation Trace
@@ -109,7 +109,7 @@ path = "../../task/hiffy"
 name = "task-hiffy"
 features = ["h723", "itm", "gpio"]
 priority = 3
-requires = {flash = 16384, ram = 16384 }
+requires = {flash = 32768, ram = 16384 }
 stacksize = 2048
 start = true
 task-slots = ["sys", "i2c_driver"]
