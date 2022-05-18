@@ -143,16 +143,14 @@ impl idl::InOrderPwmImpl for ServerImpl {
     fn set_duty(
         &mut self,
         _: &RecvMessage,
-        channel: u8,
-        duty: u16,
-    ) -> Result<u16, RequestError<PwmError>> {
-        match channel {
-            1 => self.timer.ccr1.write(|w| w.ccr().bits(duty)),
-            2 => self.timer.ccr2.write(|w| w.ccr().bits(duty)),
-            3 => self.timer.ccr3.write(|w| w.ccr().bits(duty)),
-            _ => (),
-        };
-        Ok(duty)
+        phase_a: u16,
+        phase_b: u16,
+        phase_c: u16,
+    ) -> Result<(), RequestError<PwmError>> {
+        self.timer.ccr1.write(|w| w.ccr().bits(phase_a));
+        self.timer.ccr2.write(|w| w.ccr().bits(phase_b));
+        self.timer.ccr3.write(|w| w.ccr().bits(phase_c));
+        Ok(())
     }
 }
 

@@ -5,11 +5,12 @@ Interface(
     ops: {
         "set_duty": (
             args: {
-                "channel": "u8",
-                "duty": "u16",
+                "phase_a": "u16",
+                "phase_b": "u16",
+                "phase_c": "u16",
             },
             reply: Result(
-                ok: "u16",
+                ok: "()",
                 err: CLike("PwmError"),
             ),
         ),
